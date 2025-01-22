@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "pictrace"
+version = "0.1.0"
+description = "攝影打卡網站"
+authors = ["bukun1012 <bukun0972167325@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+django = "^5.1.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
