@@ -55,7 +55,7 @@ ROOT_URLCONF = "core.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -76,8 +76,12 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "pictrace_db",  # 資料庫名稱
+        "USER": "pictrace_admin",  # 使用者名稱
+        "PASSWORD": "dcba4321",  # 使用者密碼
+        "HOST": "localhost",  # 伺服器位置
+        "PORT": "5432",  # PostgreSQL 預設端口
     }
 }
 
