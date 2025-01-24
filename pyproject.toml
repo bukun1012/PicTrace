@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pictrace"
+name = "core"
 version = "0.1.0"
 description = "攝影打卡網站"
 authors = ["bukun1012 <bukun0972167325@gmail.com>"]
