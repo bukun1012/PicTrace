@@ -1,4 +1,4 @@
-{% load static%}
+{% load static %}
 <!-- Header -->
 <header class="fixed top-0 left-0 z-50 w-full bg-blue-600 shadow-md">
   <div class="flex items-center justify-between px-4 mx-auto max-w-7xl h-14">
@@ -27,37 +27,79 @@
     </nav>
 
     <!-- Right Section: User Menu -->
-    <div class="flex items-center space-x-4">
+    <div class="relative flex items-center space-x-4">
       {% if user.is_authenticated %}
-      <!-- 登出表單 -->
-      <form action="{% url 'users:logout' %}" method="POST">
-        {% csrf_token %}
-        <button
-          type="submit"
-          class="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-200"
-        >
-          登出
+      <!-- User Avatar + Dropdown -->
+      <div class="relative">
+        <button onclick="toggleDropdown()" class="focus:outline-none">
+          <img
+            src="{% static 'images/user-avatar.png' %}"
+            alt="User Avatar"
+            class="rounded-full cursor-pointer"
+            style="width: 40px; height: 40px"
+          />
         </button>
-      </form>
+
+        <!-- Dropdown Menu -->
+        <div
+          id="userDropdown"
+          class="absolute right-0 z-10 hidden w-48 py-2 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg"
+        >
+          <a
+            href="#"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            個人資料
+          </a>
+          <a
+            href="#"
+            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            設定
+          </a>
+          <form action="{% url 'users:logout' %}" method="POST">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+            >
+              登出
+            </button>
+          </form>
+        </div>
+      </div>
       {% else %}
       <!-- 登入按鈕 -->
       <a
         href="/login"
         class="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-200"
-        style="display: inline-block"
       >
         登入
       </a>
       {% endif %}
-      <!-- User Avatar -->
-      <div class="relative">
-        <img
-          src="{% static 'images/user-avatar.png' %}"
-          alt="User Avatar"
-          class="rounded-full cursor-pointer"
-          style="width: 40px; height: 40px"
-        />
-      </div>
     </div>
   </div>
 </header>
+
+<!-- JavaScript -->
+<script>
+  // 顯示或隱藏下拉選單
+  function toggleDropdown() {
+    const dropdown = document.getElementById("userDropdown");
+    dropdown.classList.toggle("hidden");
+  }
+
+  // 點擊其他地方時隱藏下拉選單
+  function closeDropdown(event) {
+    const dropdown = document.getElementById("userDropdown");
+    const userMenu = document.querySelector(".relative"); // 大頭貼的父元素
+
+    // 檢查點擊位置是否在大頭貼或下拉選單範圍內
+    if (!userMenu.contains(event.target) && !dropdown.contains(event.target)) {
+      dropdown.classList.add("hidden");
+    }
+  }
+
+  // 設置點擊頁面其他地方時觸發關閉下拉選單
+  document.addEventListener("click", closeDropdown);
+</script>
