@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link href="{% static 'css/output.css' %}" rel="stylesheet" />
+    {% load static %}
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
   </head>
-  <body></body>
+  <body>
+    {%include "shared/navbar.html"%} {%block content %}{% endblock%}
+  </body>
 </html>
