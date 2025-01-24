@@ -44,7 +44,7 @@ def register_view(request):
             password = form.cleaned_data["password1"]
             user = User.objects.create_user(username=username, password=password)
             login(request, user)
-            return redirect("users:home")
+            return redirect("users:login")
     else:
         form = SimpleUserCreationForm()
 

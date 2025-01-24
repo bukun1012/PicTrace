@@ -39,7 +39,19 @@
 
         <!-- Right Section: User Menu -->
         <div class="flex items-center space-x-4">
-          <!-- Login Button -->
+          {% if user.is_authenticated %}
+          <!-- 登出表單 -->
+          <form action="{% url 'users:logout' %}" method="POST">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-200"
+            >
+              登出
+            </button>
+          </form>
+          {% else %}
+          <!-- 登入按鈕 -->
           <a
             href="/login"
             class="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-200"
@@ -47,6 +59,7 @@
           >
             登入
           </a>
+          {% endif %}
           <!-- User Avatar -->
           <div class="relative">
             <img
@@ -88,7 +101,7 @@
         </section>
 
         <!-- Footer -->
-        <footer class="py-8 mt-16 text-center text-white bg-blue-600">
+        <footer class="py-8 mt-16 text-center text-white bg-purple-950">
           <p>&copy; 2025 PicTrace. All rights reserved.</p>
         </footer>
       </div>
