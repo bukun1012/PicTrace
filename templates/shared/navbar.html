@@ -1,0 +1,63 @@
+{% load static%}
+<!-- Header -->
+<header class="fixed top-0 left-0 z-50 w-full bg-blue-600 shadow-md">
+  <div class="flex items-center justify-between px-4 mx-auto max-w-7xl h-14">
+    <!-- Left Section: Logo -->
+    <div class="flex items-center space-x-2">
+      <img
+        src="{% static 'images/logo.png' %}"
+        alt="PicTrace Logo"
+        class="rounded-full"
+        style="width: 40px; height: 40px"
+      />
+      <span class="text-xl font-semibold text-white">PicTrace</span>
+    </div>
+
+    <!-- Center Section: Navigation -->
+    <nav>
+      <ul class="flex space-x-6">
+        <li><a href="/" class="text-white hover:underline">首頁</a></li>
+        <li>
+          <a href="/features" class="text-white hover:underline">功能</a>
+        </li>
+        <li>
+          <a href="/contact" class="text-white hover:underline">聯絡我們</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Right Section: User Menu -->
+    <div class="flex items-center space-x-4">
+      {% if user.is_authenticated %}
+      <!-- 登出表單 -->
+      <form action="{% url 'users:logout' %}" method="POST">
+        {% csrf_token %}
+        <button
+          type="submit"
+          class="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-200"
+        >
+          登出
+        </button>
+      </form>
+      {% else %}
+      <!-- 登入按鈕 -->
+      <a
+        href="/login"
+        class="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-200"
+        style="display: inline-block"
+      >
+        登入
+      </a>
+      {% endif %}
+      <!-- User Avatar -->
+      <div class="relative">
+        <img
+          src="{% static 'images/user-avatar.png' %}"
+          alt="User Avatar"
+          class="rounded-full cursor-pointer"
+          style="width: 40px; height: 40px"
+        />
+      </div>
+    </div>
+  </div>
+</header>
