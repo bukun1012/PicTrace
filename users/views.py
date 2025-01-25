@@ -13,7 +13,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
-from django.http import HttpResponseRedirect
+from django.contrib import messages
 
 
 # 登入
@@ -24,6 +24,9 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             return redirect("users:home")  # 登入後跳轉到首頁
+        else:
+            # 如果表單無效，顯示錯誤訊息
+            messages.error(request, "帳戶名或密碼錯誤")
     else:
         form = AuthenticationForm()
     return render(request, "users/login.html", {"form": form})
@@ -51,14 +54,17 @@ def register_view(request):
             password = form.cleaned_data["password1"]
 
             # 創建用戶並保存到資料庫
-            user = User.objects.create_user(
-                username=username, email=email, password=password
-            )
-            login(request, user)
+            User.objects.create_user(username=username, email=email, password=password)
+
+            # 添加成功提示訊息
+            messages.success(request, f"註冊成功！歡迎您，{username}！")
+
+            # 跳轉到登入頁面
             return redirect("users:login")
     else:
         form = SimpleUserCreationForm()
 
+    # 渲染註冊頁面
     return render(request, "users/register.html", {"form": form})
 
 
