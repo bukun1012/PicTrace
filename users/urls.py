@@ -1,14 +1,8 @@
 from django.urls import path
-from . import views
-from django.contrib.auth import views as auth_views
-from .views import (
-    CustomPasswordResetView,
-    CustomPasswordResetDoneView,
-    CustomPasswordResetConfirmView,
-    CustomPasswordResetCompleteView,
-)  # 引入自定義的 PasswordResetDoneView
+from . import views  # 引入自定義的 views
 
 app_name = "users"
+
 urlpatterns = [
     path("login/", views.login_view, name="login"),
     path("register/", views.register_view, name="register"),

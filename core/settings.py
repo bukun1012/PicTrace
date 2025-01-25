@@ -134,8 +134,3 @@ DEFAULT_FROM_EMAIL = "PicTrace <bukun0972167325@gmail.com>"  # 預設發件人
 # 替換 `DEFAULT_DOMAIN` 和 `PROTOCOL` 為您的開發環境
 DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "localhost:8000")
 PROTOCOL = os.getenv("PROTOCOL", "http")
-
-
-os.environ["SSL_CERT_FILE"] = (
-    "/Users/bukun/Documents/PicTrace/.venv/lib/python3.13/site-packages/certifi/cacert.pem"
-)
