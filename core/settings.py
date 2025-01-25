@@ -100,7 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "zh-hant"  # 預設成中文
 
 TIME_ZONE = "UTC"
 
@@ -119,3 +119,23 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Gmail 配置 (使用 Google 作為郵件服務提供者)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = "bukun0972167325@gmail.com"  # 你的 Gmail 帳號
+EMAIL_HOST_PASSWORD = "mkzpmfiikvbtkmpr"  # PicTrace應用程式密碼
+DEFAULT_FROM_EMAIL = "PicTrace <bukun0972167325@gmail.com>"  # 預設發件人
+
+# 指定基礎域名
+# 替換 `DEFAULT_DOMAIN` 和 `PROTOCOL` 為您的開發環境
+DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "localhost:8000")
+PROTOCOL = os.getenv("PROTOCOL", "http")
+
+
+os.environ["SSL_CERT_FILE"] = (
+    "/Users/bukun/Documents/PicTrace/.venv/lib/python3.13/site-packages/certifi/cacert.pem"
+)
