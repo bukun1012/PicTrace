@@ -126,14 +126,11 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-EMAIL_HOST_USER = "bukun0972167325@gmail.com"  # 你的 Gmail 帳號
-EMAIL_HOST_PASSWORD = "zujvfwixpxfgfoot"  # PicTrace應用程式密碼
-DEFAULT_FROM_EMAIL = "PicTrace <bukun0972167325@gmail.com>"  # 預設發件人
+EMAIL_HOST_USER = "dalonbukun@gmail.com"  # 你的 Gmail 帳號
+EMAIL_HOST_PASSWORD = "oluccspeisrwgqgc"  # PicTrace應用程式密碼
+DEFAULT_FROM_EMAIL = "PicTrace <dalonbukun@gmail.com>"  # 預設發件人
 
 # 指定基礎域名
 # 替換 `DEFAULT_DOMAIN` 和 `PROTOCOL` 為您的開發環境
 DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "localhost:8000")
 PROTOCOL = os.getenv("PROTOCOL", "http")
-
-# 設定 SSL 證書路徑
-os.environ["SSL_CERT_FILE"] = os.getenv("SSL_CERT_FILE")
