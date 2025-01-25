@@ -34,12 +34,21 @@
       <!-- User Avatar + Dropdown -->
       <div class="relative">
         <button onclick="toggleDropdown()" class="focus:outline-none">
+          {% if user.profile.avatar %}
+          <img
+            src="{{ user.profile.avatar.url }}"
+            alt="User Avatar"
+            class="rounded-full cursor-pointer"
+            style="width: 40px; height: 40px"
+          />
+          {% else %}
           <img
             src="{% static 'images/user-avatar.png' %}"
             alt="User Avatar"
             class="rounded-full cursor-pointer"
             style="width: 40px; height: 40px"
           />
+          {% endif %}
         </button>
 
         <!-- Dropdown Menu -->

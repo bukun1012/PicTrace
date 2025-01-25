@@ -3,7 +3,9 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django import forms
-from .models import SimpleUserCreationForm
+from .models import SimpleUserCreationForm, Profile
+from django.contrib.auth.decorators import login_required
+from .forms import ProfileForm
 
 
 # 登入
@@ -56,3 +58,23 @@ def logout_view(request):
 
 def home_view(request):
     return render(request, "users/home.html")
+
+
+# views.py
+@login_required
+def upload_avatar(request):
+    if request.method == "POST" and request.FILES.get("avatar"):
+        avatar = request.FILES["avatar"]
+        user_profile, created = Profile.objects.get_or_create(user=request.user)
+        user_profile.avatar = avatar
+        user_profile.save()
+        return redirect("users:profile")  # 確保這裡的路由存在
+    else:
+        form = ProfileForm()  # 假設你有一個表單用來上傳圖片
+
+    return render(request, "users/upload_avatar.html", {"form": form})
+
+
+@login_required
+def profile_view(request):
+    return render(request, "users/profile.html")
