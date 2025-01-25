@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import ssl
 
 load_dotenv()  # 讀取 .env 文件的套件
 
@@ -136,6 +135,5 @@ DEFAULT_FROM_EMAIL = "PicTrace <bukun0972167325@gmail.com>"  # 預設發件人
 DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "localhost:8000")
 PROTOCOL = os.getenv("PROTOCOL", "http")
 
-os.environ["SSL_CERT_FILE"] = (
-    "/Users/bukun/Documents/PicTrace/.venv/lib/python3.13/site-packages/certifi/cacert.pem"
-)
+# 設定 SSL 證書路徑
+os.environ["SSL_CERT_FILE"] = os.getenv("SSL_CERT_FILE")
