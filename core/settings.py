@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import ssl
 
 load_dotenv()  # 讀取 .env 文件的套件
 
@@ -17,7 +18,7 @@ SECRET_KEY = "django-insecure-w3a%dsaeh8fzo6fv@-n6az(=ggl-f8qhxlz4wgd6=7x3t*n0gz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -127,10 +128,14 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = "bukun0972167325@gmail.com"  # 你的 Gmail 帳號
-EMAIL_HOST_PASSWORD = "mkzpmfiikvbtkmpr"  # PicTrace應用程式密碼
+EMAIL_HOST_PASSWORD = "zujvfwixpxfgfoot"  # PicTrace應用程式密碼
 DEFAULT_FROM_EMAIL = "PicTrace <bukun0972167325@gmail.com>"  # 預設發件人
 
 # 指定基礎域名
 # 替換 `DEFAULT_DOMAIN` 和 `PROTOCOL` 為您的開發環境
 DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "localhost:8000")
 PROTOCOL = os.getenv("PROTOCOL", "http")
+
+os.environ["SSL_CERT_FILE"] = (
+    "/Users/bukun/Documents/PicTrace/.venv/lib/python3.13/site-packages/certifi/cacert.pem"
+)

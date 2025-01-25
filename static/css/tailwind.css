@@ -635,8 +635,8 @@ video {
   margin-top: 1rem;
 }
 
-.mt-auto {
-  margin-top: auto;
+.mt-6 {
+  margin-top: 1.5rem;
 }
 
 .block {
@@ -665,10 +665,6 @@ video {
 
 .h-8 {
   height: 2rem;
-}
-
-.h-full {
-  height: 100%;
 }
 
 .h-screen {
@@ -716,10 +712,6 @@ video {
 
 .grid-cols-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.flex-col {
-  flex-direction: column;
 }
 
 .items-center {
