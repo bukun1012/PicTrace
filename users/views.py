@@ -85,9 +85,10 @@ class CustomPasswordResetView(PasswordResetView):
         "domain": settings.DEFAULT_DOMAIN,
     }
 
-    # 覆蓋郵件發送邏輯
     def form_valid(self, form):
+        """覆蓋郵件發送邏輯，避免重複發送"""
         email = form.cleaned_data["email"]
+
         for user in form.get_users(email):
             context = {
                 "email": email,
@@ -96,22 +97,21 @@ class CustomPasswordResetView(PasswordResetView):
                 "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                 "token": default_token_generator.make_token(user),
             }
-            # 使用 HTML 格式的郵件內容
             subject = render_to_string(self.subject_template_name, context).strip()
             html_message = render_to_string(self.email_template_name, context)
 
-            # 發送 HTML 格式的郵件
+            # 發送郵件
             email_msg = EmailMessage(
                 subject=subject,
-                body=html_message,  # 使用 HTML 郵件正文
+                body=html_message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[email],
             )
-            email_msg.content_subtype = "html"  # 設置郵件為 HTML 格式
+            email_msg.content_subtype = "html"  # 設置內容類型為 HTML
             email_msg.send()
 
-        # 停止父類的`form_valid`方法，避免重複發送郵件
-        return HttpResponseRedirect(self.success_url)
+        # 不再調用的郵件發送邏輯
+        return super(auth_views.PasswordResetView, self).form_valid(form)
 
 
 # 自定義的 PasswordResetDoneView
