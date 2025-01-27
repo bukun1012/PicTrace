@@ -2,3 +2,4 @@
 *.pyc
 *__pycache__/
 static/css/tailwind.css
+node_modules

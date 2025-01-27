@@ -6,6 +6,8 @@ from django import forms
 from .models import SimpleUserCreationForm, Profile
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileForm
+from django.contrib import messages
+from .utils import upload_to_s3
 
 
 # 登入
@@ -60,19 +62,23 @@ def home_view(request):
     return render(request, "users/home.html")
 
 
-# views.py
 @login_required
 def upload_avatar(request):
     if request.method == "POST" and request.FILES.get("avatar"):
         avatar = request.FILES["avatar"]
-        user_profile, created = Profile.objects.get_or_create(user=request.user)
-        user_profile.avatar = avatar
-        user_profile.save()
-        return redirect("users:profile")  # 確保這裡的路由存在
-    else:
-        form = ProfileForm()  # 假設你有一個表單用來上傳圖片
+        file_url = upload_to_s3(avatar)  # 使用自訂 S3 上傳函式
 
-    return render(request, "users/upload_avatar.html", {"form": form})
+        if file_url:
+            user_profile, created = Profile.objects.get_or_create(user=request.user)
+            user_profile.avatar = file_url  # 將 URL 儲存到資料庫
+            user_profile.save()
+            messages.success(request, "Avatar uploaded successfully!")
+        else:
+            messages.error(request, "Failed to upload avatar. Please try again.")
+
+        return redirect("users:profile")
+
+    return render(request, "users/upload_avatar.html", {"form": ProfileForm()})
 
 
 @login_required
