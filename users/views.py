@@ -14,21 +14,46 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.contrib import messages
+from django.contrib.auth import authenticate
+
+# from django.shortcuts import get_object_or_404 尚未使用404頁面
 
 
 # 登入
 def login_view(request):
     if request.method == "POST":
         form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        # 使用 `authenticate` 檢查用戶名和密碼
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            # 檢查用戶是否被禁用
+            if not user.is_active:
+                messages.error(request, "您的帳號尚未驗證，請檢查信箱完成驗證。")
+                return render(request, "users/login.html", {"form": form})
+
+            # 如果用戶已激活，執行登入
             login(request, user)
-            return redirect("users:home")  # 登入後跳轉到首頁
+            return redirect("users:home")
         else:
-            # 如果表單無效，顯示錯誤訊息
-            messages.error(request, "帳戶名或密碼錯誤")
+            # 檢查是否有用戶存在
+            try:
+                # 嘗試查詢是否有此用戶
+                user = User.objects.get(username=username)
+                if not user.is_active:
+                    messages.error(request, "您的帳號尚未驗證，請檢查信箱完成驗證。")
+                else:
+                    messages.error(request, "帳戶名或密碼錯誤")
+            except User.DoesNotExist:
+                # 用戶不存在
+                messages.error(request, "帳戶名或密碼錯誤")
+
     else:
         form = AuthenticationForm()
+
     return render(request, "users/login.html", {"form": form})
 
 
@@ -53,19 +78,59 @@ def register_view(request):
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password1"]
 
-            # 創建用戶並保存到資料庫
-            User.objects.create_user(username=username, email=email, password=password)
+            # 創建用戶但設為未激活
+            user = User.objects.create_user(
+                username=username, email=email, password=password
+            )
+            user.is_active = False  # 註冊時設為未激活
+            user.save()
 
-            # 添加成功提示訊息
-            messages.success(request, f"註冊成功！歡迎您，{username}！")
+            # 發送驗證信
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            domain = settings.DEFAULT_DOMAIN
+            protocol = settings.PROTOCOL
+            activation_link = f"{protocol}://{domain}/activate/{uid}/{token}/"
 
-            # 跳轉到登入頁面
+            subject = "PicTrace 註冊驗證"
+            message = render_to_string(
+                "users/activation_email.html",
+                {
+                    "username": username,
+                    "activation_link": activation_link,
+                },
+            )
+
+            email_msg = EmailMessage(
+                subject, message, settings.DEFAULT_FROM_EMAIL, [email]
+            )
+            email_msg.content_subtype = "html"  # 設置為 HTML 格式
+            email_msg.send()
+
+            messages.success(request, "註冊成功！請檢查您的信箱，完成帳號驗證。")
             return redirect("users:login")
     else:
         form = SimpleUserCreationForm()
 
-    # 渲染註冊頁面
     return render(request, "users/register.html", {"form": form})
+
+
+# 帳號激活驗證
+def activate_account(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "帳號驗證成功！現在可以登入了。")
+        return redirect("users:login")
+    else:
+        messages.error(request, "驗證連結無效或已過期。")
+        return redirect("users:register")
 
 
 # 登出
