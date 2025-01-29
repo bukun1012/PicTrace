@@ -4,13 +4,15 @@
   <div class="flex items-center justify-between px-4 mx-auto max-w-7xl h-14">
     <!-- Left Section: Logo -->
     <div class="flex items-center space-x-2">
-      <img
-        src="{% static 'images/logo.png' %}"
-        alt="PicTrace Logo"
-        class="rounded-full"
-        style="width: 40px; height: 40px"
-      />
-      <span class="text-xl font-semibold text-white">PicTrace</span>
+      <a href="{% url 'users:home' %}" class="flex items-center space-x-2">
+        <img
+          src="{% static 'images/logo.png' %}"
+          alt="PicTrace Logo"
+          class="rounded-full"
+          style="width: 40px; height: 40px"
+        />
+        <span class="text-xl font-semibold text-white">PicTrace</span>
+      </a>
     </div>
   </div>
 </header>
