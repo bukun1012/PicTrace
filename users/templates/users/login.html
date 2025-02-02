@@ -1,3 +1,4 @@
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -7,10 +8,50 @@
     {% load static %}
     <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
   </head>
-  {%include "shared/navbar2.html"%}
-  <body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="w-full max-w-md px-8 pt-6 pb-8 mb-4 bg-white rounded shadow-md">
-      <h1 class="mb-4 text-2xl font-bold text-center text-gray-700">登入</h1>
+  {% include "shared/navbar2.html" %}
+  <body
+    class="flex items-center justify-center h-screen bg-center bg-cover"
+    style="background-image: url('{% static 'images/background.jpg' %}')"
+  >
+    <div
+      class="w-full max-w-md px-8 pt-6 pb-8 mb-4 bg-white rounded-lg shadow-md"
+    >
+      <!-- Header with back arrow and title -->
+      <div class="relative mb-4">
+        <!-- Back Arrow -->
+        <a
+          href="/"
+          class="absolute left-0 flex items-center text-gray-600 transform -translate-y-1/2 top-1/2 hover:text-blue-800"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-8 h-8"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 5l-7 7 7 7"
+            />
+          </svg>
+        </a>
+        <!-- Login Title -->
+        <h1 class="text-2xl font-bold text-center text-gray-700">登入</h1>
+      </div>
+      <!-- Login Form -->
+      {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+        <p class="mb-2 text-sm font-bold text-center text-red-500">
+          {{ message }}
+        </p>
+        {% endfor %}
+      </div>
+      {% endif %}
       <form method="post" action="{% url 'users:login' %}">
         {% csrf_token %}
         <div class="mb-4">
@@ -31,9 +72,14 @@
         <div class="mb-6">
           <label
             for="password"
-            class="block mb-2 text-sm font-bold text-gray-700"
-            >密碼</label
-          >
+            class="flex mb-2 text-sm font-bold text-gray-700"
+            >密碼<a
+              href="{% url 'users:password_reset' %}"
+              class="flex ml-auto text-blue-600 hover:underline"
+              >忘記密碼？</a
+            >
+          </label>
+
           <input
             type="password"
             name="password"
@@ -57,7 +103,21 @@
             還沒有帳號嗎? 註冊
           </a>
         </div>
+        <div class="flex justify-center mt-4">
+          <a
+            href="{% provider_login_url 'google' %}"
+            class="px-4 py-2 font-bold text-white bg-red-600 rounded hover:bg-red-700"
+          >
+            使用 Google 登入
+          </a>
+        </div>
       </form>
     </div>
+    <!-- Footer -->
+    <footer
+      class="absolute bottom-0 left-0 right-0 flex justify-center py-2 text-center text-white bg-black"
+    >
+      <p>&copy; 2025 PicTrace. All rights reserved.</p>
+    </footer>
   </body>
 </html>
