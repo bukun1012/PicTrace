@@ -1,6 +1,6 @@
 .env
 *.pyc
-*__pycache__/
+*__pycache__
 static/css/tailwind.css
 node_modules
 .DS_Store

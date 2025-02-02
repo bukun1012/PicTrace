@@ -4,7 +4,7 @@
   <div class="flex items-center justify-between px-4 mx-auto max-w-7xl h-14">
     <!-- Left Section: Logo -->
     <div class="flex items-center space-x-2">
-      <a href="{% url 'users:home' %}" class="flex items-center space-x-2">
+      <a href="{% url 'home:home' %}" class="flex items-center space-x-2">
         <img
           src="{% static 'images/logo.png' %}"
           alt="PicTrace Logo"
@@ -82,7 +82,7 @@
       {% else %}
       <!-- 登入按鈕 -->
       <a
-        href="/login"
+        href="{% url 'users:login' %}"
         class="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-200"
       >
         登入
