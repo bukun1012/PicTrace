@@ -13,13 +13,20 @@ def upload_to_s3(file):
     file_extension = file.name.split(".")[-1]
     file_name = f"avatars/{uuid4()}.{file_extension}"
 
+    # 確定 Content-Type
+    content_type = file.content_type if hasattr(file, "content_type") else "image/jpeg"
+
     try:
         s3.upload_fileobj(
             file,
             settings.AWS_STORAGE_BUCKET_NAME,
             file_name,
-            ExtraArgs={"ACL": "public-read"},
+            ExtraArgs={
+                "ContentType": content_type,  # 新增 Content-Type
+                "ContentDisposition": "inline",  # ✅ 讓瀏覽器內嵌顯示，而不是下載
+            },
         )
+
         file_url = f"https://{settings.AWS_S3_CUSTOM_DOMAIN}/{file_name}"
         return file_url
     except Exception as e:
