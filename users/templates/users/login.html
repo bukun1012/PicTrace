@@ -20,7 +20,7 @@
       <div class="relative mb-4">
         <!-- Back Arrow -->
         <a
-          href="/"
+          href="{% url 'home:home' %}"
           class="absolute left-0 flex items-center text-gray-600 transform -translate-y-1/2 top-1/2 hover:text-blue-800"
         >
           <svg
@@ -97,7 +97,7 @@
             登入
           </button>
           <a
-            href="/register"
+            href="{% url 'users:register' %}"
             class="inline-block text-sm font-bold text-blue-600 align-baseline hover:text-blue-800"
           >
             還沒有帳號嗎? 註冊

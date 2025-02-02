@@ -19,7 +19,7 @@
       <div class="relative mb-4">
         <!-- Back Arrow -->
         <a
-          href="/"
+          href="{% url 'home:home' %}"
           class="absolute left-0 flex items-center text-gray-600 transform -translate-y-1/2 top-1/2 hover:text-blue-800"
         >
           <svg
@@ -134,7 +134,11 @@
       <div class="mt-4 text-center">
         <p class="text-sm text-gray-500">
           已經有帳號？
-          <a href="/login" class="text-blue-600 hover:underline">登入</a>
+          <a
+            href="{% url 'users:login' %}"
+            class="text-blue-600 hover:underline"
+            >登入</a
+          >
         </p>
       </div>
     </div>

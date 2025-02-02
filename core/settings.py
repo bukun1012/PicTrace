@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",  # allauth 需要這個
     # 自定義 APP
+    "home",
     "users",
     "storages",
     # 第三方 APP

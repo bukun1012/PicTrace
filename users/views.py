@@ -16,7 +16,6 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from django.utils.http import urlsafe_base64_decode
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import authenticate
 
@@ -41,7 +40,7 @@ def login_view(request):
 
             # 如果用戶已激活，執行登入
             login(request, user)
-            return redirect("users:home")
+            return redirect("home:home")
         else:
             # 檢查是否有用戶存在
             try:
@@ -119,33 +118,11 @@ def register_view(request):
     return render(request, "users/register.html", {"form": form})
 
 
-# 帳號激活驗證
-def activate_account(request, uidb64, token):
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
-
-    if user and default_token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
-        messages.success(request, "帳號驗證成功！現在可以登入了。")
-        return redirect("users:login")
-    else:
-        messages.error(request, "驗證連結無效或已過期。")
-        return redirect("users:register")
-
-
 # 登出
 def logout_view(request):
     if request.method == "POST":
         logout(request)
-        return redirect("users:home")
-
-
-def home_view(request):
-    return render(request, "users/home.html")
+        return redirect("home:home")
 
 
 @login_required
