@@ -66,12 +66,29 @@ def home_view(request):
 def upload_avatar(request):
     if request.method == "POST" and request.FILES.get("avatar"):
         avatar = request.FILES["avatar"]
-        file_url = upload_to_s3(avatar)  # 使用自訂 S3 上傳函式
+
+        # 檢查檔案大小 (限制 5 MB)
+        if avatar.size > 5 * 1024 * 1024:
+            messages.error(request, "The file size exceeds the 5MB limit.")
+            return redirect("users:upload_avatar")
+
+        # 檢查檔案類型 (僅允許 JPEG 和 PNG)
+        if not hasattr(avatar, "content_type") or avatar.content_type not in [
+            "image/jpeg",
+            "image/png",
+        ]:
+            messages.error(request, "Only JPEG and PNG files are allowed.")
+            return redirect("users:upload_avatar")
+
+        # 上傳檔案到 S3
+        file_url = upload_to_s3(avatar)
 
         if file_url:
+            # 更新或創建用戶資料
             user_profile, created = Profile.objects.get_or_create(user=request.user)
-            user_profile.avatar = file_url  # 將 URL 儲存到資料庫
+            user_profile.avatar = file_url
             user_profile.save()
+
             messages.success(request, "Avatar uploaded successfully!")
         else:
             messages.error(request, "Failed to upload avatar. Please try again.")
@@ -83,4 +100,8 @@ def upload_avatar(request):
 
 @login_required
 def profile_view(request):
-    return render(request, "users/profile.html")
+    # 獲取用戶的 Profile 資訊，顯示頭像 URL
+    user_profile = Profile.objects.filter(user=request.user).first()
+    avatar_url = user_profile.avatar if user_profile and user_profile.avatar else None
+
+    return render(request, "users/profile.html", {"avatar_url": avatar_url})
