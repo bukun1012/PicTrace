@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django import forms
 from .models import SimpleUserCreationForm, Profile
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileForm
@@ -58,18 +57,6 @@ def login_view(request):
         form = AuthenticationForm()
 
     return render(request, "users/login.html", {"form": form})
-
-
-# 註冊
-# 用戶註冊表單（只包含用戶名和密碼）
-def clean(self):
-    cleaned_data = super().clean()
-    password1 = cleaned_data.get("password1")
-    password2 = cleaned_data.get("password2")
-
-    if password1 != password2:
-        raise forms.ValidationError("兩次密碼不一致")
-    return cleaned_data
 
 
 # 註冊視圖
