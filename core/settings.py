@@ -30,6 +30,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "users",
+    "django.contrib.sites",  # 必須加入，否則 allauth 會報錯
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",  # 加入 Google 第三方登入
 ]
 
 MIDDLEWARE = [
@@ -40,6 +45,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -134,3 +140,35 @@ DEFAULT_FROM_EMAIL = "PicTrace <dalonbukun@gmail.com>"  # 預設發件人
 # 替換 `DEFAULT_DOMAIN` 和 `PROTOCOL` 為您的開發環境
 DEFAULT_DOMAIN = os.getenv("DEFAULT_DOMAIN", "localhost:8000")
 PROTOCOL = os.getenv("PROTOCOL", "http")
+
+# google site id
+SITE_ID = 1
+
+# google身份驗證後備端
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+# allauth 登入相關 URL
+LOGIN_REDIRECT_URL = "/"  # 登入後的重導向頁面
+LOGOUT_REDIRECT_URL = "/"  # 登出後的重導向頁面
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_AUTO_SIGNUP = True  # 允許自動註冊
+ACCOUNT_SIGNUP_REDIRECT_URL = "/"  # 註冊後的重導向頁面（可設定為首頁）
+SOCIALACCOUNT_EMAIL_REQUIRED = True  # 確保 Google 提供 email
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"  # 設定 email 驗證為 "none"，避免多一步驗證
+SOCIALACCOUNT_ADAPTER = "users.adapters.MySocialAccountAdapter"  # 自動產生使用者名稱
+SOCIALACCOUNT_LOGIN_ON_GET = True  # 直接跳過 Google 登入確認頁面
+
+# Google OAuth2 設定
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+    }
+}
+
+MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
