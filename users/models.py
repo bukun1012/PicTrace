@@ -2,6 +2,7 @@ from django import forms
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class SimpleUserCreationForm(forms.Form):
@@ -9,6 +10,14 @@ class SimpleUserCreationForm(forms.Form):
     email = forms.EmailField(required=True, validators=[validate_email])
     password1 = forms.CharField(widget=forms.PasswordInput, min_length=8, required=True)
     password2 = forms.CharField(widget=forms.PasswordInput, min_length=8, required=True)
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
+
+    def __str__(self):
+        return self.user.username
 
     def clean_email(self):
         email = self.cleaned_data.get("email")

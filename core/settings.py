@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",  # allauth 需要這個
     # 自定義 APP
     "users",
+    "storages",
     # 第三方 APP
     "allauth",
     "allauth.account",
@@ -129,6 +130,18 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # ==========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# AWS S3 配置
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
+
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+# 使用 S3 儲存上傳的文件
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+# MEDIA_ROOT = BASE_DIR / "media"
 # ==========================
 # 郵件服務 (Gmail)
 # ==========================
