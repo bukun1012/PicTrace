@@ -32,4 +32,9 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("check-email/", views.check_email_view, name="check_email"),
+    path(
+        "resend-verification/",
+        views.resend_verification_email_view,
+        name="resend_verification",
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

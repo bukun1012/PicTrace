@@ -8,7 +8,6 @@
     <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
   </head>
   {% include "shared/navbar2.html" %}
-
   <body
     class="flex items-center justify-center h-screen bg-center bg-cover"
     style="background-image: url('{% static 'images/background.jpg' %}')"
@@ -22,12 +21,26 @@
         <span class="font-bold text-gray-800">{{ email }}</span>
       </p>
       <p class="mt-2 text-gray-600">請檢查您的信箱以完成註冊。</p>
+
+      <!-- 返回登入頁面按鈕 -->
       <a
         href="{% url 'users:login' %}"
         class="block w-full px-4 py-2 mt-4 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
       >
         返回登入頁面
       </a>
+
+      <!-- 重新發送驗證郵件按鈕 -->
+      <form method="post" action="{% url 'users:resend_verification' %}">
+        {% csrf_token %}
+        <input type="hidden" name="email" value="{{ email }}" />
+        <button
+          type="submit"
+          class="block w-full px-4 py-2 mt-4 font-bold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+        >
+          重新發送驗證郵件
+        </button>
+      </form>
     </div>
   </body>
 </html>
