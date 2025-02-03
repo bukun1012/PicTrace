@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
@@ -108,9 +108,45 @@ def register_view(request):
 
 # 檢查電子郵件的頁面
 def check_email_view(request):
-    """顯示檢查電子郵件的頁面"""
     email = request.GET.get("email")  # 取得用戶註冊時的 email
     return render(request, "users/check_email.html", {"email": email})
+
+
+# 處理重新發送驗證郵件的請求
+def resend_verification_email_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        user = get_object_or_404(User, email=email)
+
+        if not user.is_active:
+            # 產生新的驗證連結
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            domain = settings.DEFAULT_DOMAIN
+            protocol = settings.PROTOCOL
+            activation_link = f"{protocol}://{domain}/activate/{uid}/{token}/"
+
+            # 發送驗證信
+            subject = "PicTrace 註冊驗證 (重新發送)"
+            message = render_to_string(
+                "users/activation_email.html",
+                {
+                    "username": user.username,
+                    "activation_link": activation_link,
+                },
+            )
+
+            email_msg = EmailMessage(
+                subject, message, settings.DEFAULT_FROM_EMAIL, [email]
+            )
+            email_msg.content_subtype = "html"
+            email_msg.send()
+
+            messages.success(request, "驗證郵件已重新發送！請檢查您的信箱。")
+        else:
+            messages.info(request, "您的帳號已經驗證過，請直接登入。")
+
+    return redirect(f"{reverse_lazy('users:check_email')}?email={email}")
 
 
 # 登出
