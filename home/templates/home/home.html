@@ -1,40 +1,30 @@
-{% extends "shared/layout.html"%}
-{%block content%}
-{%load static%}
-  <body class="text-black bg-gray-100">
-    <!-- Main Content -->
-    <main class="pt-16">
-      <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <h1 class="mb-8 text-4xl font-bold text-center">歡迎來到 PicTrace！</h1>
+{% extends "shared/layout.html" %} {% load static %} {% block content %}
+<!-- Main Content -->
+<main class="pt-16">
+  <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+    <h1 class="mb-8 text-4xl font-bold text-center">歡迎來到 PicTrace！</h1>
 
-        <!-- Features Section -->
-        <section class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
-          <div class="p-6 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold">發現台灣景點</h2>
-            <p class="mt-4 text-gray-600">
-              在地標註你拍攝過的景點，並探索更多美麗的場所。
-            </p>
-          </div>
-          <div class="p-6 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold">照片分享</h2>
-            <p class="mt-4 text-gray-600">
-              將你的照片上傳與社群分享，建立自己的影像庫。
-            </p>
-          </div>
-          <div class="p-6 bg-white rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold">用戶活動</h2>
-            <p class="mt-4 text-gray-600">
-              參與我們的拍攝主題活動，並有機會贏得獎品。
-            </p>
-          </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="absolute bottom-0 left-0 right-0 flex justify-center py-2 text-center text-white bg-black">
-          <p>&copy; 2025 PicTrace. All rights reserved.</p>
-        </footer>
+    <!-- Features Section -->
+    <section class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
+      <div class="p-6 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold">發現台灣景點</h2>
+        <p class="mt-4 text-gray-600">
+          在地標註你拍攝過的景點，並探索更多美麗的場所。
+        </p>
       </div>
-    </main>
-  </body>
-</html>
-{%endblock%}
+      <div class="p-6 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold">照片分享</h2>
+        <p class="mt-4 text-gray-600">
+          將你的照片上傳與社群分享，建立自己的影像庫。
+        </p>
+      </div>
+      <div class="p-6 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-semibold">用戶活動</h2>
+        <p class="mt-4 text-gray-600">
+          參與我們的拍攝主題活動，並有機會贏得獎品。
+        </p>
+      </div>
+    </section>
+  </div>
+</main>
+{% endblock %}
