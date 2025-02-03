@@ -7,40 +7,52 @@
     {% load static %}
     <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
   </head>
-  {% include "shared/navbar2.html" %}
+
   <body
-    class="flex flex-col items-center justify-center min-h-screen bg-center bg-cover pt-14"
+    class="flex flex-col min-h-screen pt-16 bg-center bg-cover"
     style="background-image: url('{% static 'images/background.jpg' %}')"
   >
-    <div
-      class="w-full max-w-md px-8 pt-6 pb-8 mb-4 text-center bg-white rounded-lg shadow-md"
-    >
-      <h1 class="text-2xl font-bold text-gray-700">檢查你的收件箱</h1>
-      <p class="mt-2 text-gray-600">
-        我們已將驗證郵件發送至
-        <span class="font-bold text-gray-800">{{ email }}</span>
-      </p>
-      <p class="mt-2 text-gray-600">請檢查您的信箱以完成註冊。</p>
+    {% include "shared/navbar2.html" %}
 
-      <!-- 返回登入頁面按鈕 -->
-      <a
-        href="{% url 'users:login' %}"
-        class="block w-full px-4 py-2 mt-4 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+    <main class="flex flex-col items-center justify-center flex-grow">
+      <div
+        class="w-full max-w-md px-8 pt-6 pb-8 text-center bg-white rounded-lg shadow-md"
       >
-        返回登入頁面
-      </a>
+        <!-- Header -->
+        <h1 class="text-2xl font-bold text-gray-700">檢查你的收件箱</h1>
 
-      <!-- 重新發送驗證郵件按鈕 -->
-      <form method="post" action="{% url 'users:resend_verification' %}">
-        {% csrf_token %}
-        <input type="hidden" name="email" value="{{ email }}" />
-        <button
-          type="submit"
-          class="block w-full px-4 py-2 mt-4 font-bold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
-        >
-          重新發送驗證郵件
-        </button>
-      </form>
-    </div>
+        <!-- Message -->
+        <p class="mt-2 text-gray-600">
+          我們已將驗證郵件發送至
+          <span class="font-bold text-gray-800">{{ email }}</span>
+        </p>
+        <p class="mt-2 text-gray-600">請檢查您的信箱以完成註冊。</p>
+
+        <!-- 按鈕組 -->
+        <div class="mt-4 space-y-3">
+          <!-- 返回登入頁面按鈕 -->
+          <a
+            href="{% url 'users:login' %}"
+            class="block w-full px-4 py-2 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+          >
+            返回登入頁面
+          </a>
+
+          <!-- 重新發送驗證郵件按鈕 -->
+          <form method="post" action="{% url 'users:resend_verification' %}">
+            {% csrf_token %}
+            <input type="hidden" name="email" value="{{ email }}" />
+            <button
+              type="submit"
+              class="block w-full px-4 py-2 font-bold text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+            >
+              重新發送驗證郵件
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    {% include "shared/footer.html" %}
   </body>
 </html>
