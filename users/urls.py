@@ -31,4 +31,5 @@ urlpatterns = [
         views.CustomPasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
+    path("check-email/", views.check_email_view, name="check_email"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
