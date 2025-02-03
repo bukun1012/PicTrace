@@ -11,7 +11,7 @@
   {% include "shared/navbar2.html" %}
 
   <body
-    class="flex items-center justify-center h-screen bg-center bg-cover"
+    class="flex flex-col items-center justify-center min-h-screen bg-center bg-cover pt-14"
     style="background-image: url('{% static 'images/background.jpg' %}')"
   >
     <div
@@ -46,9 +46,16 @@
       {% if form.errors %}
       <div class="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
         <ul>
-          {% for field, errors in form.errors.items %} {% for error in errors %}
+          <!-- 顯示表單的非欄位錯誤 -->
+          {% for error in form.non_field_errors %}
           <li>{{ error }}</li>
-          {% endfor %} {% endfor %}
+          {% endfor %}
+
+          <!-- 顯示每個欄位的錯誤，只顯示一次 -->
+          {% for field, errors in form.errors.items %} {% if errors %}
+          <li>{{ errors.0 }}</li>
+          <!-- 只顯示第一個錯誤，避免重複 -->
+          {% endif %} {% endfor %}
         </ul>
       </div>
       {% endif %}

@@ -20,8 +20,11 @@ class SimpleUserCreationForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
-        if User.objects.filter(email=email).exists():
+
+        # 只有當 email 存在且格式正確時才執行查詢
+        if email and User.objects.filter(email=email).exists():
             raise ValidationError("該電子郵件已被註冊")
+
         return email
 
     def clean(self):
@@ -33,13 +36,14 @@ class SimpleUserCreationForm(forms.Form):
         if password1 and password2 and password1 != password2:
             self.add_error("password2", "兩次密碼不一致")
 
-        # 密碼強度檢查：至少 8 個字元，包含至少一個英文字母與一個數字
-        if password1 and not re.match(
-            r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", password1
-        ):
-            self.add_error(
-                "password1", "密碼必須至少 8 個字元，且包含至少一個英文字母與一個數字。"
-            )
+        # 分開檢查密碼長度和是否包含英文字母+數字
+        if password1:
+            if len(password1) < 8:
+                self.add_error("password1", "密碼必須至少 8 個字元")
+            elif not re.search(r"[A-Za-z]", password1) or not re.search(
+                r"\d", password1
+            ):
+                self.add_error("password1", "密碼必須包含英文字母與數字")
 
         return cleaned_data
 
