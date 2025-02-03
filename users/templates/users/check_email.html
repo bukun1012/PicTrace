@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PicTrace - 檢查電子郵件</title>
+    {% load static %}
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
+  </head>
+  {% include "shared/navbar2.html" %}
+
+  <body
+    class="flex items-center justify-center h-screen bg-center bg-cover"
+    style="background-image: url('{% static 'images/background.jpg' %}')"
+  >
+    <div
+      class="w-full max-w-md px-8 pt-6 pb-8 mb-4 text-center bg-white rounded-lg shadow-md"
+    >
+      <h1 class="text-2xl font-bold text-gray-700">檢查你的收件箱</h1>
+      <p class="mt-2 text-gray-600">
+        我們已將驗證郵件發送至
+        <span class="font-bold text-gray-800">{{ email }}</span>
+      </p>
+      <p class="mt-2 text-gray-600">請檢查您的信箱以完成註冊。</p>
+      <a
+        href="{% url 'users:login' %}"
+        class="block w-full px-4 py-2 mt-4 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+      >
+        返回登入頁面
+      </a>
+    </div>
+  </body>
+</html>

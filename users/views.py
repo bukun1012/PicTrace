@@ -97,12 +97,20 @@ def register_view(request):
             email_msg.content_subtype = "html"  # 設置為 HTML 格式
             email_msg.send()
 
-            messages.success(request, "註冊成功！請檢查您的信箱，完成帳號驗證。")
-            return redirect("users:login")
+            # 轉向檢查信箱頁面，並帶上 email 參數
+            return redirect(f"{reverse_lazy('users:check_email')}?email={email}")
+
     else:
         form = SimpleUserCreationForm()
 
     return render(request, "users/register.html", {"form": form})
+
+
+# 檢查電子郵件的頁面
+def check_email_view(request):
+    """顯示檢查電子郵件的頁面"""
+    email = request.GET.get("email")  # 取得用戶註冊時的 email
+    return render(request, "users/check_email.html", {"email": email})
 
 
 # 登出
