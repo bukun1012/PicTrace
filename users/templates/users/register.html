@@ -15,7 +15,7 @@
     style="background-image: url('{% static 'images/background.jpg' %}')"
   >
     <div
-      class="w-full max-w-md px-8 pt-6 pb-8 mb-4 bg-white rounded-lg shadow-md"
+      class="w-full max-w-md px-8 pt-6 pb-2 mb-4 bg-white rounded-lg shadow-md"
     >
       <!-- Header -->
       <div class="relative mb-4">
@@ -225,6 +225,17 @@
         </button>
         <!-- 分隔線 -->
         <hr class="my-4 border-gray-500 border-1" />
+
+        <div class="text-center">
+          <p class="px-4 text-gray-500">
+            已經有帳號？
+            <a
+              href="{% url 'users:login' %}"
+              class="text-blue-600 hover:underline"
+              >登入</a
+            >
+          </p>
+        </div>
       </form>
     </div>
 
