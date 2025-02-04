@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from .models import SimpleUserCreationForm, Profile
+from .models import Profile
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileForm
 from django.contrib import messages
@@ -17,6 +17,7 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import authenticate
+from .forms import SimpleUserCreationForm
 
 # from django.shortcuts import get_object_or_404 尚未使用404頁面
 
