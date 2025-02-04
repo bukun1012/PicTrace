@@ -36,7 +36,7 @@ def login_view(request):
             user = User.objects.get(username=username)
 
             if not user.is_active:
-                messages.error(request, "您的帳號尚未驗證，請檢查信箱完成驗證。")
+                messages.error(request, "您的帳號尚未驗證，請檢查信箱完成驗證")
             else:
                 user = authenticate(request, username=username, password=password)
                 if user is not None:
@@ -64,14 +64,14 @@ def register_view(request):
 
         # ✅ 檢查用戶名是否已被使用
         if User.objects.filter(username=username).exists():
-            errors.append("該用戶名已被使用，請選擇其他用戶名。")
+            errors.append("該用戶名已被使用")
 
         # ✅ 檢查電子郵件格式
         email_validator = EmailValidator()
         try:
             email_validator(email)
         except ValidationError:
-            errors.append("請輸入有效的電子郵件地址。")
+            errors.append("請輸入有效的電子郵件地址")
 
         # ✅ 檢查電子郵件是否已被使用
         if User.objects.filter(email=email).exists():
