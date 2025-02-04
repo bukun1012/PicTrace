@@ -1,8 +1,13 @@
-import re
 from django import forms
-from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
 from .models import Profile
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.models import User
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
 
 
 class ProfileForm(forms.ModelForm):
@@ -11,43 +16,38 @@ class ProfileForm(forms.ModelForm):
         fields = ["avatar"]
 
 
-class SimpleUserCreationForm(forms.Form):
-    username = forms.CharField(max_length=150, required=True)
-    email = forms.EmailField(required=True)
-    password1 = forms.CharField(widget=forms.PasswordInput, required=True)
-    password2 = forms.CharField(widget=forms.PasswordInput, required=True)
+class CustomPasswordResetForm(PasswordResetForm):
+    """自定義密碼重置表單，處理郵件發送邏輯"""
 
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        if User.objects.filter(username=username).exists():
-            raise ValidationError("該用戶名已被使用，請選擇其他用戶名。")
-        return username
+    def save(
+        self,
+        domain_override=None,
+        subject_template_name="users/password_reset_subject.txt",
+        email_template_name="users/password_reset_email.html",
+        use_https=False,
+        token_generator=default_token_generator,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        request=None,
+        **kwargs
+    ):
 
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("該電子郵件已被註冊")
-        return email
+        for user in self.get_users(self.cleaned_data["email"]):
+            context = {
+                "email": self.cleaned_data["email"],
+                "domain": settings.DEFAULT_DOMAIN,
+                "protocol": settings.PROTOCOL,
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": token_generator.make_token(user),
+            }
+            subject = render_to_string(subject_template_name, context).strip()
+            html_message = render_to_string(email_template_name, context)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        password1 = cleaned_data.get("password1")
-        password2 = cleaned_data.get("password2")
-
-        if password1 and password2 and password1 != password2:
-            self.add_error("password2", "兩次密碼不一致")
-
-        if password1:
-            if len(password1) < 8:
-                self.add_error("password1", "密碼必須至少 8 個字元")
-            elif not re.search(r"[A-Za-z]", password1) or not re.search(
-                r"\d", password1
-            ):
-                self.add_error("password1", "密碼必須包含英文字母與數字")
-
-        return cleaned_data
-
-
-class SimpleUserLoginForm(forms.Form):
-    username = forms.CharField(max_length=150, required=True)
-    password = forms.CharField(widget=forms.PasswordInput, required=True)
+            # 發送郵件
+            email_msg = EmailMessage(
+                subject=subject,
+                body=html_message,
+                from_email=from_email,
+                to=[self.cleaned_data["email"]],
+            )
+            email_msg.content_subtype = "html"
+            email_msg.send()
