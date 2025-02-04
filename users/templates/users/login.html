@@ -15,11 +15,9 @@
   >
     {% include "shared/navbar2.html" %}
 
-    <!-- Main Content -->
     <main class="flex flex-col items-center justify-center flex-grow pt-16">
       <div class="w-full max-w-md px-8 pt-6 pb-4 bg-white rounded-lg shadow-md">
         <div class="relative mb-4">
-          <!-- Back Arrow -->
           <a
             href="{% url 'home:home' %}"
             class="absolute left-0 flex items-center text-gray-600 transform -translate-y-1/2 top-1/2 hover:text-blue-800"
@@ -49,20 +47,18 @@
 
         <!-- Error Messages -->
         {% if messages %}
-        <div class="mb-4">
-          {% for message in messages %}
-          <p class="mb-2 text-sm font-bold text-center text-red-500">
-            {{ message }}
-          </p>
-          {% endfor %}
+        <div class="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
+          <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
         </div>
         {% endif %}
 
         <!-- Login Form -->
         <form method="post" action="{% url 'users:login' %}">
           {% csrf_token %}
-
-          <!-- Username -->
           <div class="mb-4">
             <label
               for="username"
@@ -78,7 +74,6 @@
             />
           </div>
 
-          <!-- Password -->
           <div class="relative mb-6">
             <label
               for="password"
@@ -107,7 +102,6 @@
             登入
           </button>
 
-          <!-- 使用 Google 登入 -->
           <div class="flex justify-center mt-4">
             <a
               href="{% provider_login_url 'google' %}"
@@ -119,7 +113,6 @@
 
           <hr class="my-4 border-gray-500 border-1" />
 
-          <!-- 註冊提示 -->
           <div class="text-center">
             <p class="px-4 text-gray-500">
               還沒有帳號嗎？
