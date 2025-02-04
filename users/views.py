@@ -19,6 +19,8 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import authenticate
 from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
+from .forms import CustomSetPasswordForm
+from django.contrib.auth import update_session_auth_hash
 
 
 # from django.shortcuts import get_object_or_404 尚未使用404頁面
@@ -262,9 +264,26 @@ class CustomPasswordResetDoneView(PasswordResetDoneView):
 
 
 # 自定義的 PasswordResetConfirmView
+
+
 class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
     template_name = "users/password_reset_confirm.html"
     success_url = reverse_lazy("users:password_reset_complete")
+    form_class = CustomSetPasswordForm  # 使用自訂表單
+
+    def form_valid(self, form):
+        """當表單驗證成功時，儲存新密碼並更新 session"""
+        user = form.save()
+        update_session_auth_hash(self.request, user)  # 確保使用者保持登入狀態
+        messages.success(self.request, "您的密碼已成功重置！請使用新密碼登入。")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        """當表單驗證失敗時，將錯誤訊息加入 messages"""
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, error)  # 顯示所有錯誤訊息
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 # 自定義的 PasswordResetCompleteView
