@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from .models import Profile
 from django.contrib.auth.decorators import login_required
@@ -17,45 +16,35 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth import authenticate
-from .forms import SimpleUserCreationForm
+from .forms import SimpleUserCreationForm, SimpleUserLoginForm
 
 # from django.shortcuts import get_object_or_404 尚未使用404頁面
 
 
 # 登入
 def login_view(request):
+    form = SimpleUserLoginForm(request.POST or None)
+
     if request.method == "POST":
-        form = AuthenticationForm(data=request.POST)
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            password = form.cleaned_data["password"]
 
-        # 使用 `authenticate` 檢查用戶名和密碼
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            # 檢查用戶是否被禁用
-            if not user.is_active:
-                messages.error(request, "您的帳號尚未驗證，請檢查信箱完成驗證。")
-                return render(request, "users/login.html", {"form": form})
-
-            # 如果用戶已激活，執行登入
-            login(request, user)
-            return redirect("home:home")
-        else:
-            # 檢查是否有用戶存在
             try:
-                # 嘗試查詢是否有此用戶
                 user = User.objects.get(username=username)
+
                 if not user.is_active:
                     messages.error(request, "您的帳號尚未驗證，請檢查信箱完成驗證。")
                 else:
-                    messages.error(request, "帳戶名或密碼錯誤")
-            except User.DoesNotExist:
-                # 用戶不存在
-                messages.error(request, "帳戶名或密碼錯誤")
+                    user = authenticate(request, username=username, password=password)
+                    if user is not None:
+                        login(request, user)
+                        return redirect("home:home")
+                    else:
+                        messages.error(request, "帳戶名或密碼錯誤")
 
-    else:
-        form = AuthenticationForm()
+            except User.DoesNotExist:
+                messages.error(request, "帳戶名或密碼錯誤")
 
     return render(request, "users/login.html", {"form": form})
 
