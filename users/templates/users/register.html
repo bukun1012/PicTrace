@@ -8,242 +8,236 @@
     <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" />
   </head>
 
+  {% include "shared/navbar2.html" %}
+
   <body
-    class="flex flex-col min-h-screen pt-16 bg-center bg-cover"
+    class="flex flex-col items-center justify-center min-h-screen bg-center bg-cover pt-14"
     style="background-image: url('{% static 'images/background.jpg' %}')"
   >
-    {% include "shared/navbar2.html" %}
-
-    <main class="flex flex-col items-center justify-center flex-grow">
-      <div class="w-full max-w-md px-8 pt-6 pb-2 bg-white rounded-lg shadow-md">
-        <!-- Header -->
-        <div class="relative mb-4">
-          <a
-            href="{% url 'home:home' %}"
-            class="absolute left-0 flex items-center text-gray-600 transform -translate-y-1/2 top-1/2 hover:text-blue-800"
+    <div
+      class="w-full max-w-md px-8 pt-6 pb-2 mb-4 bg-white rounded-lg shadow-md"
+    >
+      <!-- Header -->
+      <div class="relative mb-4">
+        <a
+          href="{% url 'home:home' %}"
+          class="absolute left-0 flex items-center text-gray-600 transform -translate-y-1/2 top-1/2 hover:text-blue-800"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-8 h-8"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M19 12H5"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 5l-7 7 7 7"
-              />
-            </svg>
-          </a>
-          <h1 class="text-2xl font-bold text-center text-gray-700">註冊帳號</h1>
-        </div>
-
-        <!-- ✅ 修正錯誤訊息 -->
-        {% if form.errors %}
-        <div class="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
-          <ul>
-            {% for error in form.non_field_errors %}
-            <li>{{ error }}</li>
-            {% endfor %} {% for field in form %} {% for error in field.errors %}
-            <li>{{ error }}</li>
-            {% endfor %} {% endfor %}
-          </ul>
-        </div>
-        {% endif %}
-
-        <form method="post" action="{% url 'users:register' %}">
-          {% csrf_token %}
-
-          <!-- Username -->
-          <div class="mb-4">
-            <label
-              for="username"
-              class="block mb-2 text-sm font-bold text-gray-700"
-              >用戶名</label
-            >
-            <input
-              type="text"
-              name="username"
-              id="username"
-              class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-              value="{{ form.username.value|default_if_none:'' }}"
-              required
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 5l-7 7 7 7"
             />
-          </div>
-
-          <!-- Email -->
-          <div class="mb-4">
-            <label
-              for="email"
-              class="block mb-2 text-sm font-bold text-gray-700"
-              >信箱</label
-            >
-            <input
-              type="email"
-              name="email"
-              id="email"
-              class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-              value="{{ form.email.value|default_if_none:'' }}"
-              required
-            />
-          </div>
-
-          <!-- Password -->
-          <div class="mb-6">
-            <label
-              for="password1"
-              class="block mb-2 text-sm font-bold text-gray-700"
-              >密碼</label
-            >
-            <div class="relative">
-              <input
-                type="password"
-                name="password1"
-                id="password1"
-                placeholder="密碼須包含英文及數字"
-                class="w-full px-3 py-2 pr-10 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-                required
-              />
-              <span
-                onclick="togglePassword('password1')"
-                class="absolute inset-y-0 flex items-center text-gray-500 cursor-pointer right-3 hover:text-gray-700"
-              >
-                <svg
-                  id="eye-open-password1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15.9 15.9A6 6 0 018 12a6 6 0 017.9-3.9"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"
-                  />
-                </svg>
-                <svg
-                  id="eye-closed-password1"
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="hidden w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M17.94 17.94A9.99 9.99 0 0112 20C5 20 2 12 2 12s3-8 10-8c2.5 0 4.8.9 6.54 2.4"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M9.88 9.88a3 3 0 014.24 4.24M3 3l18 18"
-                  />
-                </svg>
-              </span>
-            </div>
-          </div>
-
-          <!-- Confirm Password -->
-          <div class="mb-6">
-            <label
-              for="password2"
-              class="block mb-2 text-sm font-bold text-gray-700"
-              >確認密碼</label
-            >
-            <div class="relative">
-              <input
-                type="password"
-                name="password2"
-                id="password2"
-                placeholder="請再次輸入密碼"
-                class="w-full px-3 py-2 pr-10 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-                required
-              />
-              <span
-                onclick="togglePassword('password2')"
-                class="absolute inset-y-0 flex items-center text-gray-500 cursor-pointer right-3 hover:text-gray-700"
-              >
-                <svg
-                  id="eye-open-password2"
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15.9 15.9A6 6 0 018 12a6 6 0 017.9-3.9"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"
-                  />
-                </svg>
-                <svg
-                  id="eye-closed-password2"
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="hidden w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M17.94 17.94A9.99 9.99 0 0112 20C5 20 2 12 2 12s3-8 10-8c2.5 0 4.8.9 6.54 2.4"
-                  />
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M9.88 9.88a3 3 0 014.24 4.24M3 3l18 18"
-                  />
-                </svg>
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            class="w-full px-4 py-2 font-bold text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline"
-          >
-            註冊
-          </button>
-
-          <div class="mt-4 text-center">
-            <p class="text-gray-500">
-              已經有帳號？<a
-                href="{% url 'users:login' %}"
-                class="text-blue-600 hover:underline"
-                >登入</a
-              >
-            </p>
-          </div>
-        </form>
+          </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-center text-gray-700">註冊帳號</h1>
       </div>
-    </main>
 
-    {% include "shared/footer.html" %}
+      <!-- Error Messages -->
+      {% if messages %}
+      <div class="p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
+        <ul>
+          {% for message in messages %}
+          <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'users:register' %}">
+        {% csrf_token %}
+
+        <!-- Username -->
+        <div class="mb-4">
+          <label
+            for="username"
+            class="block mb-2 text-sm font-bold text-gray-700"
+            >用戶名</label
+          >
+          <input
+            type="text"
+            name="username"
+            id="username"
+            class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+            value="{{ form.username.value|default_if_none:'' }}"
+            required
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="mb-4">
+          <label for="email" class="block mb-2 text-sm font-bold text-gray-700"
+            >信箱</label
+          >
+          <input
+            type="email"
+            name="email"
+            id="email"
+            class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+            value="{{ form.email.value|default_if_none:'' }}"
+            required
+          />
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+          <label
+            for="password1"
+            class="block mb-2 text-sm font-bold text-gray-700"
+            >密碼</label
+          >
+          <div class="relative">
+            <input
+              type="password"
+              name="password1"
+              id="password1"
+              placeholder="密碼須包含英文及數字"
+              class="w-full px-3 py-2 pr-10 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+              required
+              minlength="8"
+            />
+            <span
+              onclick="togglePassword('password1')"
+              class="absolute inset-y-0 flex items-center text-gray-500 cursor-pointer right-3 hover:text-gray-700"
+            >
+              <svg
+                id="eye-open-password1"
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.9 15.9A6 6 0 018 12a6 6 0 017.9-3.9"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"
+                />
+              </svg>
+              <svg
+                id="eye-closed-password1"
+                xmlns="http://www.w3.org/2000/svg"
+                class="hidden w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17.94 17.94A9.99 9.99 0 0112 20C5 20 2 12 2 12s3-8 10-8c2.5 0 4.8.9 6.54 2.4"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.88 9.88a3 3 0 014.24 4.24M3 3l18 18"
+                />
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-6">
+          <label
+            for="password2"
+            class="block mb-2 text-sm font-bold text-gray-700"
+            >確認密碼</label
+          >
+          <div class="relative">
+            <input
+              type="password"
+              name="password2"
+              id="password2"
+              placeholder="請再次輸入密碼"
+              class="w-full px-3 py-2 pr-10 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+              required
+              minlength="8"
+            />
+            <span
+              onclick="togglePassword('password2')"
+              class="absolute inset-y-0 flex items-center text-gray-500 cursor-pointer right-3 hover:text-gray-700"
+            >
+              <svg
+                id="eye-open-password2"
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.9 15.9A6 6 0 018 12a6 6 0 017.9-3.9"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"
+                />
+              </svg>
+              <svg
+                id="eye-closed-password2"
+                xmlns="http://www.w3.org/2000/svg"
+                class="hidden w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17.94 17.94A9.99 9.99 0 0112 20C5 20 2 12 2 12s3-8 10-8c2.5 0 4.8.9 6.54 2.4"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.88 9.88a3 3 0 014.24 4.24M3 3l18 18"
+                />
+              </svg>
+            </span>
+          </div>
+        </div>
+        <button
+          type="submit"
+          class="w-full px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-500"
+        >
+          註冊
+        </button>
+        <!-- 分隔線 -->
+        <hr class="my-4 border-gray-500 border-1" />
+
+        <div class="text-center">
+          <p class="px-4 text-gray-500">
+            已經有帳號？
+            <a
+              href="{% url 'users:login' %}"
+              class="text-blue-600 hover:underline"
+              >登入</a
+            >
+          </p>
+        </div>
+      </form>
+    </div>
 
     <script>
       function togglePassword(id) {
