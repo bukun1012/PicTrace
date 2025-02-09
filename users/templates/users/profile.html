@@ -1,8 +1,7 @@
-<h1>Profile Page</h1>
-<p>Welcome, {{ request.user.username }}!</p>
-<h1>Your Profile</h1>
-{% if avatar_url %}
-<img src="{{ avatar_url }}" alt="Avatar" style="max-width: 150px" />
-{% else %}
-<p>No avatar uploaded.</p>
-{% endif %}
+{% extends "shared/profile.html" %} {% block profile %}
+
+<div class="profile-content" style="text-align: center; padding: 20px">
+  <h2>Welcome to your profile page, {{ request.user.username }}!</h2>
+</div>
+
+{% endblock %}
