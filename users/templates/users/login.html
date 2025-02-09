@@ -102,12 +102,19 @@
             登入
           </button>
 
-          <div class="flex justify-center mt-4">
+          <div class="flex justify-between mt-4 space-x-4">
             <a
               href="{% provider_login_url 'google' %}"
-              class="px-4 py-2 font-bold text-white bg-red-600 rounded hover:bg-red-700"
+              class="flex-1 px-4 py-2 font-bold text-center text-white bg-red-600 rounded hover:bg-red-700"
             >
-              使用 Google 登入
+              Google 登入
+            </a>
+
+            <a
+              href="{% provider_login_url 'line' %}"
+              class="flex-1 px-4 py-2 font-bold text-center text-white bg-green-600 rounded hover:bg-green-700"
+            >
+              Line 登入
             </a>
           </div>
 

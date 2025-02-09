@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.line",
 ]
 
 # ==========================
@@ -185,10 +186,23 @@ SOCIALACCOUNT_PROVIDERS = {
     "google": {
         "SCOPE": ["profile", "email"],
         "AUTH_PARAMS": {"access_type": "online"},
-    }
+    },
+    "line": {
+        "SCOPE": ["openid", "profile", "email"],  # 啟用 Email 權限
+        "AUTH_PARAMS": {"prompt": "consent"},  # 讓用戶每次登入都同意授權
+    },
 }
 
 # ==========================
 # 訊息管理
 # ==========================
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
+
+
+SOCIALACCOUNT_PROVIDERS["line"]["APP"] = {
+    "client_id": "2006880194",
+    "secret": "4141cf5f4ffe99e96406f54072270b09",
+}
+
+SOCIALACCOUNT_SIGNUP_REDIRECT_URL = "/"  # 註冊後直接回到首頁
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = "/"  # 第三方登入後直接回到首頁
