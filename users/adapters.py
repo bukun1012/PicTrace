@@ -3,7 +3,6 @@ from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.hashers import make_password
-from django.shortcuts import redirect
 
 User = get_user_model()
 
@@ -45,7 +44,7 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
         """自動關聯帳號並處理 LINE 直接註冊"""
         provider = sociallogin.account.provider  # google / line
-        user_email = sociallogin.account.extra_data.get("email", "")
+        user_email = sociallogin.account.extra_data.get("email", None)
         user_uid = sociallogin.account.uid
 
         # **Google 登入邏輯**
@@ -90,5 +89,6 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
                 email=user_email if user_email else "",
                 password=make_password(None),
             )
-            sociallogin.connect(request, new_user)
-            sociallogin.state["process"] = "connect"  # 直接登入
+            sociallogin.user = new_user
+            sociallogin.save(request)
+            return  # 直接登入
