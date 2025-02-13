@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "home",
     "users",
     "storages",
+    "posts",
     # 第三方 APP
     "allauth",
     "allauth.account",
