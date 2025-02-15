@@ -3,11 +3,15 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
+from posts.models import Post
 
 
 # Create your views here.
 def home_view(request):
-    return render(request, "home/home.html")
+    posts = Post.objects.all().order_by("-created_at")[
+        :5
+    ]  # 按照時間排序，最新的貼文在最上方
+    return render(request, "home/home.html", {"posts": posts})
 
 
 # 帳號激活驗證
@@ -26,3 +30,8 @@ def activate_account(request, uidb64, token):
     else:
         messages.error(request, "驗證連結無效或已過期。")
         return redirect("users:register")
+
+
+def home(request):
+    posts = Post.objects.all().order_by("-created_at")[:5]  # 顯示最新 5 篇貼文
+    return render(request, "home/home.html", {"posts": posts})

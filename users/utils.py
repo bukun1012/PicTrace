@@ -17,6 +17,7 @@ def upload_to_s3(file):
     content_type = file.content_type if hasattr(file, "content_type") else "image/jpeg"
 
     try:
+        file.seek(0)
         s3.upload_fileobj(
             file,
             settings.AWS_STORAGE_BUCKET_NAME,
