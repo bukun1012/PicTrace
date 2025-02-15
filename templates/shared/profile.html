@@ -1,4 +1,4 @@
-{% extends "shared/layout.html" %} {% block content %}
+{% extends "shared/layout.html" %} {% block content %}{% load static %}
 <div
   class="profile-header"
   style="background: url('{{ background_url|default:'/static/images/profile-background.webp' }}') center/cover no-repeat; padding: 50px 20px; text-align: center; color: white;"
@@ -8,9 +8,10 @@
       href="{% url 'users:upload_avatar' %}"
       style="display: block; position: relative"
     >
+      {% if user.profile.avatar %}
       <img
-        src="{{ avatar_url|default:'/static/images/user-avatar.png' }}"
-        alt="Avatar"
+        src="{{ user.profile.avatar }}"
+        alt="User Avatar"
         style="
           width: 100px;
           height: 100px;
@@ -20,6 +21,20 @@
         "
         class="avatar-image"
       />
+      {% else %}
+      <img
+        src="{% static 'images/user-avatar.png' %}"
+        alt="User Avatar"
+        style="
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          border: 3px solid white;
+          transition: opacity 0.3s ease-in-out;
+        "
+        class="avatar-image"
+      />
+      {% endif %}
     </a>
   </div>
   <h1

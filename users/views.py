@@ -179,7 +179,7 @@ def upload_avatar(request):
 
         # 檢查檔案大小 (限制 5 MB)
         if avatar.size > 5 * 1024 * 1024:
-            messages.error(request, "The file size exceeds the 5MB limit.")
+            messages.error(request, "檔案大小不能超過 5 MB")
             return redirect("users:upload_avatar")
 
         # 檢查檔案類型 (僅允許 JPEG 和 PNG)
@@ -187,7 +187,7 @@ def upload_avatar(request):
             "image/jpeg",
             "image/png",
         ]:
-            messages.error(request, "Only JPEG and PNG files are allowed.")
+            messages.error(request, " 只能上傳 JPEG 或 PNG 格式的圖片")
             return redirect("users:upload_avatar")
 
         # 上傳檔案到 S3
@@ -199,9 +199,9 @@ def upload_avatar(request):
             user_profile.avatar = file_url
             user_profile.save()
 
-            messages.success(request, "Avatar uploaded successfully!")
+            messages.success(request, "頭像上傳成功！")
         else:
-            messages.error(request, "Failed to upload avatar. Please try again.")
+            messages.error(request, "頭像上傳失敗，請稍後再試")
 
         return redirect("users:profile")
 

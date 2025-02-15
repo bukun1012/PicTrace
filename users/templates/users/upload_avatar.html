@@ -1,12 +1,35 @@
-<form method="POST" enctype="multipart/form-data">
-  {% csrf_token %} {{ form.as_p }}
-  <button type="submit">上傳大頭貼</button>
-</form>
+{% extends "shared/layout.html" %} {% block content %}{% load static %}
+<div class="flex flex-col items-center justify-center min-h-screen py-10">
+  <div class="w-full max-w-lg p-8 bg-white rounded-lg shadow-xl">
+    <h2 class="mb-4 text-3xl font-extrabold text-center text-gray-900">
+      編輯個人資訊
+    </h2>
+    <p class="mb-6 text-center text-gray-600">請更新您的大頭貼</p>
 
-{% if messages %}
-<ul>
-  {% for message in messages %}
-  <li class="message {{ message.tags }}">{{ message }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+
+      <div class="flex flex-col items-center space-y-4">{{ form.avatar }}</div>
+
+      <button
+        type="submit"
+        class="w-full py-3 font-semibold text-white transition duration-300 bg-blue-600 rounded-lg shadow-lg hover:bg-blue-700"
+      >
+        更新資訊
+      </button>
+    </form>
+
+    {% if messages %}
+    <div class="mt-6">
+      {% for message in messages %}
+      <div
+        class="p-4 rounded-lg text-white font-medium shadow-md text-center {% if message.tags == 'success' %} bg-green-500 {% elif message.tags == 'error' %} bg-red-500 {% else %} bg-gray-600 {% endif %}"
+      >
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
