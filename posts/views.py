@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from .models import Post
 from .forms import PostForm
@@ -20,14 +21,16 @@ def create_post(request):
 
                 # 檢查檔案大小 (限制 5MB)
                 if image.size > 5 * 1024 * 1024:
-                    return redirect("posts:create_post")
+                    return JsonResponse({"error": "圖片大小超過 5MB 限制"}, status=400)
 
                 # 檢查檔案類型 (僅允許 JPEG 和 PNG)
                 if hasattr(image, "content_type") and image.content_type not in [
                     "image/jpeg",
                     "image/png",
                 ]:
-                    return redirect("posts:create_post")
+                    return JsonResponse(
+                        {"error": "僅支援 JPEG 和 PNG 圖片格式"}, status=400
+                    )
 
                 # ✅ 使用 `upload_to_s3` 上傳圖片
                 image.seek(0)
@@ -36,7 +39,18 @@ def create_post(request):
                     post.image_url = file_url
 
             post.save()  # ✅ 儲存貼文
-            return redirect("home:home")
+
+            # ✅ 回應 JSON 給前端
+            return JsonResponse(
+                {
+                    "message": "貼文發佈成功",
+                    "post_id": post.id,
+                    "image_url": post.image_url,
+                },
+                status=200,
+            )
+
+        return JsonResponse({"error": "表單驗證失敗"}, status=400)
 
     else:
         form = PostForm()

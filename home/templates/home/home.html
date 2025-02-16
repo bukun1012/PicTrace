@@ -1,28 +1,41 @@
-{% extends "shared/layout.html" %} {% load static %} {% block content %}
-<div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+{% extends "shared/layout.html" %} 
+{% load static %} 
+
+{% block content %}
+<div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8" x-data="postModal()">
   <h1 class="mb-8 text-4xl font-bold text-center">歡迎來到 PicTrace！</h1>
 
-  <!-- Features Section -->
-  <section class="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3">
-    <div class="p-6 bg-white rounded-lg shadow-lg">
-      <h2 class="text-2xl font-semibold">發現台灣景點</h2>
-      <p class="mt-4 text-gray-600">
-        在地標註你拍攝過的景點，並探索更多美麗的場所。
-      </p>
+  <!-- 發文按鈕 -->
+  <div class="flex justify-center mb-6">
+    <button @click="isPostModalOpen = true" class="px-4 py-2 text-white bg-blue-500 rounded-lg">
+      新增貼文
+    </button>
+  </div>
+
+  <!-- 發文 Modal 視窗 -->
+  <div x-show="isPostModalOpen" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <div class="p-6 bg-white rounded-lg shadow-lg w-96">
+      <h2 class="mb-4 text-xl font-bold">新增貼文</h2>
+      <form @submit.prevent="submitPost">
+        {% csrf_token %}
+        <label class="block mb-2">標題：</label>
+        <input type="text" x-model="postTitle" class="w-full px-3 py-2 mb-3 border rounded-md" required>
+
+        <label class="block mb-2">內容：</label>
+        <textarea x-model="postContent" class="w-full px-3 py-2 mb-3 border rounded-md" required></textarea>
+
+        <label class="block mb-2">圖片：</label>
+        <input type="file" @change="handleFileUpload" class="mb-3">
+
+        <div class="flex justify-end">
+          <button type="button" @click="isPostModalOpen = false" class="px-4 py-2 mr-2 text-gray-600 bg-gray-300 rounded-lg">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 text-white bg-blue-500 rounded-lg">發布</button>
+        </div>
+      </form>
     </div>
-    <div class="p-6 bg-white rounded-lg shadow-lg">
-      <h2 class="text-2xl font-semibold">照片分享</h2>
-      <p class="mt-4 text-gray-600">
-        將你的照片上傳與社群分享，建立自己的影像庫。
-      </p>
-    </div>
-    <div class="p-6 bg-white rounded-lg shadow-lg">
-      <h2 class="text-2xl font-semibold">用戶活動</h2>
-      <p class="mt-4 text-gray-600">
-        參與我們的拍攝主題活動，並有機會贏得獎品。
-      </p>
-    </div>
-  </section>
+  </div>
 
   <!-- 最新貼文 -->
   <section class="mt-12">
@@ -37,7 +50,7 @@
         <h3 class="mt-4 text-lg font-semibold">{{ post.title }}</h3>
         <p class="text-gray-600">{{ post.content|truncatechars:50 }}</p>
         <p class="text-sm text-gray-500">
-          由 {{ post.author.username }}發布於 {{ post.created_at|timesince }} 前
+          由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }} 前
         </p>
       </div>
       {% endfor %}
@@ -47,4 +60,55 @@
     {% endif %}
   </section>
 </div>
+
+<!-- Alpine.js 前端邏輯 -->
+<script>
+  document.addEventListener("alpine:init", () => {
+      Alpine.data("postModal", () => ({
+          isPostModalOpen: false,
+          postTitle: "",
+          postContent: "",
+          imageFile: null,
+  
+          handleFileUpload(event) {
+              this.imageFile = event.target.files[0];
+          },
+  
+          async submitPost() {
+              if (!this.postTitle || !this.postContent) {
+                  alert("標題和內容不可為空！");
+                  return;
+              }
+  
+              let formData = new FormData();
+              formData.append("title", this.postTitle);
+              formData.append("content", this.postContent);
+              if (this.imageFile) {
+                  formData.append("image", this.imageFile);
+              }
+  
+              try {
+                  const response = await fetch("{% url 'posts:create_post' %}", {
+                      method: "POST",
+                      headers: {
+                          "X-CSRFToken": "{{ csrf_token }}"
+                      },
+                      body: formData
+                  });
+  
+                  if (response.ok) {
+                      location.reload(); // 成功後重新整理頁面
+                  } else {
+                      alert("發文失敗，請重試");
+                  }
+              } catch (error) {
+                  console.error("發生錯誤：", error);
+                  alert("發文時發生錯誤！");
+              }
+          }
+      }));
+  });
+  </script>
+  
+
 {% endblock %}
