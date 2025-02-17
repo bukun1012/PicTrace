@@ -31,6 +31,11 @@
     <!-- Right Section: User Menu -->
     <div class="relative flex items-center space-x-4">
       {% if user.is_authenticated %}
+      <!-- 發布貼文按鈕 -->
+      <button @click="isPostModalOpen = true" class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600">
+        發布貼文
+      </button>
+
       <!-- User Avatar + Dropdown -->
       <div class="relative">
         <button onclick="toggleDropdown()" class="focus:outline-none">
