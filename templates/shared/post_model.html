@@ -1,0 +1,67 @@
+<div x-show="isPostModalOpen" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <div class="p-6 bg-white rounded-lg shadow-lg w-96">
+        <h2 class="mb-4 text-xl font-bold">新增貼文</h2>
+        <form @submit.prevent="submitPost">
+            {% csrf_token %}
+            <label class="block mb-2">內容：</label>
+            <textarea x-model="postContent" class="w-full px-3 py-2 mb-3 border rounded-md" required></textarea>
+            <label class="block mb-2">圖片：</label>
+            <input type="file" @change="handleFileUpload" class="mb-3">
+            <div class="flex justify-end">
+                <button type="button" @click="isPostModalOpen = false" class="px-4 py-2 mr-2 text-gray-600 bg-gray-300 rounded-lg">取消</button>
+                <button type="submit" class="px-4 py-2 text-white bg-blue-500 rounded-lg">發布</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("postModal", () => ({
+            isPostModalOpen: false,
+            postContent: "",
+            imageFile: null,
+
+            handleFileUpload(event) {
+                this.imageFile = event.target.files[0];
+            },
+
+            async submitPost() {
+                if (!this.postContent.trim()) {
+                    alert("內容不可為空！");
+                    return;
+                }
+
+                let formData = new FormData();
+                formData.append("title", "New Post");  // 🔥 修正：Django 需要 `title`
+                formData.append("content", this.postContent);
+                if (this.imageFile) {
+                    formData.append("image", this.imageFile);
+                }
+
+                // 🔥 確保 CSRF Token 正確傳遞
+                let csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+                try {
+                    const response = await fetch("/posts/new/", {  // 🔥 修正 URL 確保正確
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": csrfToken,
+                        },
+                        body: formData,
+                    });
+
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        let data = await response.json();
+                        alert("發文失敗：" + (data.error || "請重試"));
+                    }
+                } catch (error) {
+                    console.error("發生錯誤：", error);
+                    alert("發文時發生錯誤！");
+                }
+            },
+        }));
+    });
+</script>
