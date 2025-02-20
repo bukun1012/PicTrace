@@ -1,0 +1,8 @@
+<h2>確定要刪除此貼文嗎？</h2>
+<p>{{ post.title }}</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit">確定刪除</button>
+    <a href="{% url 'home:home' %}">取消</a>
+</form>
