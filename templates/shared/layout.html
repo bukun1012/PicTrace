@@ -8,7 +8,7 @@
     <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-gray-200" x-data="postModal()">
+<body class="bg-black" x-data="postModal()">
 
     <!-- 🔥 主體佈局 -->
     <div class="flex w-full max-w-[1200px] mx-auto">
@@ -19,7 +19,7 @@
         </div>
 
         <!-- ✅ 中間貼文區 (滾動) -->
-        <main class="flex-1 px-4 mx-auto">
+        <main class="flex-1 max-w-[600px] px-4 mx-auto">
             {% block content %}{% endblock %}
         </main>
 
