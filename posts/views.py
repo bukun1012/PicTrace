@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 
+# 發布貼文
 @login_required
 def create_post(request):
     if request.method == "POST":
@@ -15,6 +16,14 @@ def create_post(request):
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
+
+            # ✅ 儲存位置欄位
+            post.location = request.POST.get("location", "")
+
+            # ✅ 確認圖片存在
+            if not request.FILES.get("image"):
+                messages.error(request, "圖片是必填的！")
+                return redirect("home:home")
 
             # ✅ 如果有上傳圖片，則上傳至 S3，並存儲 URL
             if request.FILES.get("image"):
@@ -41,17 +50,11 @@ def create_post(request):
 
             post.save()  # ✅ 儲存貼文
 
-            # ✅ 回應 JSON 給前端
-            return JsonResponse(
-                {
-                    "message": "貼文發佈成功",
-                    "post_id": post.id,
-                    "image_url": post.image_url,
-                },
-                status=200,
-            )
+            messages.success(request, "貼文已成功發布！")
+            return redirect("home:home")
 
-        return JsonResponse({"error": "表單驗證失敗"}, status=400)
+        messages.error(request, "表單驗證失敗，請檢查輸入內容")
+        return redirect("home:home")
 
     else:
         form = PostForm()
@@ -59,7 +62,7 @@ def create_post(request):
     return render(request, "posts/create_post.html", {"form": form})
 
 
-# ✅ 編輯貼文
+# 編輯貼文
 @login_required
 def edit_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
@@ -113,7 +116,7 @@ def edit_post(request, post_id):
     return render(request, "posts/edit_post.html", {"form": form, "post": post})
 
 
-# ✅ 刪除貼文
+# 刪除貼文
 @login_required
 def delete_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
@@ -128,3 +131,9 @@ def delete_post(request, post_id):
         return redirect("home:home")  # ✅ 刪除後返回首頁
 
     return render(request, "posts/confirm_delete.html", {"post": post})
+
+
+# 點擊看詳細貼文
+def post_detail(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    return render(request, "posts/post_detail.html", {"post": post})

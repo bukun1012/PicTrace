@@ -1,0 +1,35 @@
+{% extends "shared/layout.html" %} {% load static %} {% block content %}
+<div class="max-w-3xl p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg">
+  {% if post.image_url %}
+  <img
+    src="{{ post.image_url }}"
+    alt="Post Image"
+    class="w-full mb-4 rounded-md"
+  />
+  {% endif %}
+
+  <h2 class="mb-2 text-2xl font-bold">{{ post.author.username }} 的貼文</h2>
+  <p class="mb-4 text-gray-600">{{ post.content }}</p>
+
+  {% if post.location %}
+  <p class="mb-2 text-gray-500">📍 {{ post.location }}</p>
+  {% endif %}
+
+  <p class="text-sm text-gray-400">
+    發布於 {{ post.created_at|date:"Y-m-d H:i" }}
+  </p>
+
+  <!-- 假設未來會有按讚和留言功能 -->
+  <div class="flex mt-4 space-x-4">
+    <button class="px-4 py-2 text-white bg-blue-500 rounded-lg">👍 喜歡</button>
+    <button class="px-4 py-2 text-gray-800 bg-gray-300 rounded-lg">
+      💬 留言
+    </button>
+  </div>
+
+  <!-- 返回按鈕 -->
+  <div class="mt-6">
+    <a href="{% url 'home:home' %}" class="text-blue-500">← 返回首頁</a>
+  </div>
+</div>
+{% endblock %}
