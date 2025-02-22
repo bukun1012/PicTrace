@@ -1,4 +1,5 @@
 {% extends "shared/layout.html" %} {% load static %} {% block content %}
+
 <h1 class="mb-8 text-3xl font-bold text-center text-white">
   歡迎來到 PicTrace！
 </h1>
@@ -6,48 +7,98 @@
 <!-- 最新貼文 -->
 <section class="mt-8">
   <h2 class="text-2xl font-bold text-center text-white">最新貼文</h2>
+
   {% if posts %}
   <div class="flex flex-col mt-6 space-y-6">
     {% for post in posts %}
-    <a href="{% url 'posts:post_detail' post.id %}">
-    <div class="p-4 bg-white rounded-lg shadow-md">
-      {% if post.image_url %}
-      <img
-        src="{{ post.image_url }}"
-        alt="Post Image"
-        class="object-cover w-full rounded-md max-h-[400px]"
-      />
-      {% endif %} {% if post.location %}
-      <p class="text-sm text-gray-500">📍 {{ post.location }}</p>
-      {% endif %}
-      <p class="text-gray-600">{{ post.content|truncatechars:50 }}</p>
-      <p class="text-sm text-gray-500">
-        由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }} 前
-      </p>
+    <div
+      class="relative p-4 bg-white rounded-lg shadow-md"
+      x-data="{ openMenu: false }"
+      @click.away="openMenu = false"
+    >
+      <!-- 將點擊區域限制在內容部分，並防止「...」影響點擊 -->
+      <a
+        href="{% url 'posts:post_detail' post.id %}"
+        class="block"
+        @click="if(openMenu) $event.preventDefault()"
+      >
+        <!-- 貼文圖片 -->
+        {% if post.image_url %}
+        <img
+          src="{{ post.image_url }}"
+          alt="Post Image"
+          class="object-cover w-full rounded-md max-h-[400px]"
+        />
+        {% endif %}
 
-      <!-- 編輯與刪除按鈕：只有發文者能看到 -->
-      {% if user == post.author %}
-      <div class="flex justify-between mt-4">
-        <a
-          href="{% url 'posts:edit_post' post.id %}"
-          class="px-3 py-1 text-sm text-white bg-green-500 rounded hover:bg-green-600"
-          >編輯</a
-        >
-        <form
-          action="{% url 'posts:delete_post' post.id %}"
-          method="POST"
-          onsubmit="return confirm('確定要刪除這篇貼文嗎？');"
-        >
-          {% csrf_token %}
-          <button
-            type="submit"
-            class="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
-          >
-            刪除
-          </button>
-        </form>
-      </div>
-      {% endif %}
+        <!-- 位置和「...」按鈕 -->
+        <div class="flex items-center justify-between">
+          {% if post.location %}
+          <p class="text-sm text-gray-500">📍 {{ post.location }}</p>
+          {% endif %}
+
+          <!-- 三個點的選單按鈕 -->
+          {% if user == post.author %}
+          <div @click.stop class="relative">
+            <!-- ...按鈕 -->
+            <button
+              @click="openMenu = !openMenu"
+              class="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-200"
+              title="更多選項"
+            >
+              ⋯
+            </button>
+
+            <!-- 自訂樣式的下拉選單 -->
+            <div
+              x-show="openMenu"
+              @click.away="openMenu = false"
+              x-transition
+              class="absolute z-10 w-20 mt-2 overflow-hidden text-white bg-black border border-gray-700 rounded-md shadow-lg right-2 ring-1 ring-white ring-opacity-20"
+            >
+              <!-- 刪除 -->
+              <form
+                action="{% url 'posts:delete_post' post.id %}"
+                method="POST"
+                onsubmit="return confirm('確定要刪除這篇貼文嗎？');"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="flex items-center w-full px-4 py-2 text-red-500 rounded-none hover:bg-gray-700"
+                >
+                  <span class="ml-2">刪除</span>
+                </button>
+              </form>
+
+              <!-- 編輯 -->
+              <a
+                href="{% url 'posts:edit_post' post.id %}"
+                class="flex items-center px-4 py-2 rounded-none hover:bg-gray-700"
+              >
+                <span class="ml-2">編輯</span>
+              </a>
+
+              <!-- 其他功能示範 -->
+              <a
+                href="#"
+                class="flex items-center px-4 py-2 rounded-none hover:bg-gray-700"
+              >
+                <span class="ml-2">置頂</span>
+              </a>
+            </div>
+          </div>
+
+          {% endif %}
+        </div>
+
+        <!-- 內容 -->
+        <p class="mt-2 text-gray-600">{{ post.content|truncatechars:50 }}</p>
+        <p class="text-sm text-gray-500">
+          由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }}
+          前
+        </p>
+      </a>
     </div>
     {% endfor %}
   </div>
