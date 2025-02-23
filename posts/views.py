@@ -127,10 +127,9 @@ def delete_post(request, post_id):
 
     if request.method == "POST":
         post.delete()
-        messages.success(request, "貼文已成功刪除！")  # ✅ 新增成功訊息
-        return redirect("home:home")  # ✅ 刪除後返回首頁
+        return redirect("home:home")  # 刪除後返回首頁
 
-    return render(request, "posts/confirm_delete.html", {"post": post})
+    return HttpResponseForbidden("無效的請求方法。")
 
 
 # 點擊看詳細貼文

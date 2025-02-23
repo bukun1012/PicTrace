@@ -54,41 +54,41 @@
               x-show="openMenu"
               @click.away="openMenu = false"
               x-transition
-              class="absolute z-10 w-20 mt-2 overflow-hidden text-white bg-black border border-gray-700 rounded-md shadow-lg right-2 ring-1 ring-white ring-opacity-20"
+              class="absolute z-10 w-24 mt-2 overflow-hidden text-white bg-black border border-gray-700 rounded-md shadow-lg right-2 ring-1 ring-white ring-opacity-20"
             >
+              <!-- 編輯 -->
+              <a
+                href="{% url 'posts:edit_post' post.id %}"
+                class="flex items-center w-full px-4 py-2 hover:bg-gray-700"
+              >
+                <span>編輯</span>
+              </a>
+
+              <!-- 置頂 -->
+              <a
+                href="#"
+                class="flex items-center w-full px-4 py-2 hover:bg-gray-700"
+              >
+                <span>置頂</span>
+              </a>
+
               <!-- 刪除 -->
               <form
                 action="{% url 'posts:delete_post' post.id %}"
                 method="POST"
-                onsubmit="return confirm('確定要刪除這篇貼文嗎？');"
+                onsubmit="return confirm('確定要刪除此貼文嗎？');"
+                class="w-full"
               >
                 {% csrf_token %}
                 <button
                   type="submit"
-                  class="flex items-center w-full px-4 py-2 text-red-500 rounded-none hover:bg-gray-700"
+                  class="flex items-center w-full px-4 py-2 text-left text-red-500 hover:bg-gray-700"
                 >
-                  <span class="ml-2">刪除</span>
+                  刪除
                 </button>
               </form>
-
-              <!-- 編輯 -->
-              <a
-                href="{% url 'posts:edit_post' post.id %}"
-                class="flex items-center px-4 py-2 rounded-none hover:bg-gray-700"
-              >
-                <span class="ml-2">編輯</span>
-              </a>
-
-              <!-- 其他功能示範 -->
-              <a
-                href="#"
-                class="flex items-center px-4 py-2 rounded-none hover:bg-gray-700"
-              >
-                <span class="ml-2">置頂</span>
-              </a>
             </div>
           </div>
-
           {% endif %}
         </div>
 
