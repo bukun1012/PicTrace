@@ -3,8 +3,11 @@
   class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
 >
   <div class="p-6 bg-white rounded-lg shadow-lg w-96">
-    <h2 class="mb-4 text-xl font-bold">新增貼文</h2>
-    <form @submit.prevent="submitPost">
+    <h2
+      class="mb-4 text-xl font-bold"
+      x-text="isEditing ? '編輯貼文' : '新增貼文'"
+    ></h2>
+    <form @submit.prevent="isEditing ? submitEditPost() : submitPost()">
       {% csrf_token %}
 
       <!-- 內容 -->
@@ -17,7 +20,12 @@
 
       <!-- 圖片 -->
       <label class="block mb-2">圖片：</label>
-      <input type="file" @change="handleFileUpload" class="mb-3" required />
+      <input
+        type="file"
+        @change="handleFileUpload"
+        class="mb-3"
+        :required="!isEditing"
+      />
 
       <!-- 位置 -->
       <label class="block mb-2">位置 (選填)：</label>
@@ -32,7 +40,7 @@
       <div class="flex justify-end">
         <button
           type="button"
-          @click="isPostModalOpen = false"
+          @click="closeModal"
           class="px-4 py-2 mr-2 text-gray-600 bg-gray-300 rounded-lg"
         >
           取消
@@ -41,7 +49,7 @@
           type="submit"
           class="px-4 py-2 text-white bg-blue-500 rounded-lg"
         >
-          發布
+          <span x-text="isEditing ? '更新' : '發布'"></span>
         </button>
       </div>
     </form>
@@ -52,14 +60,48 @@
   document.addEventListener("alpine:init", () => {
     Alpine.data("postModal", () => ({
       isPostModalOpen: false,
+      isEditing: false,
+      postId: null,
       postContent: "",
       postLocation: "",
       imageFile: null,
 
+      // 打開新增貼文 Modal
+      openNewPostModal() {
+        this.isEditing = false; // 確保是新增模式
+        this.postId = null;
+        this.postContent = "";
+        this.postLocation = "";
+        this.imageFile = null;
+        this.isPostModalOpen = true;
+      },
+
+      // 打開編輯貼文 Modal
+      openEditModal(postId, content, location) {
+        this.isEditing = true; // 編輯模式
+        this.postId = postId;
+        this.postContent = content;
+        this.postLocation = location;
+        this.imageFile = null; // 清除圖片欄位（或保留根據需求）
+        this.isPostModalOpen = true;
+      },
+
+      // 關閉 Modal 並重置狀態
+      closeModal() {
+        this.isPostModalOpen = false;
+        this.isEditing = false;
+        this.postId = null;
+        this.postContent = "";
+        this.postLocation = "";
+        this.imageFile = null;
+      },
+
+      // 上傳圖片
       handleFileUpload(event) {
         this.imageFile = event.target.files[0];
       },
 
+      // 提交新增貼文
       async submitPost() {
         if (!this.postContent.trim()) {
           alert("內容不可為空！");
@@ -73,18 +115,14 @@
           formData.append("image", this.imageFile);
         }
 
-        // 🔥 確保 CSRF Token 正確傳遞
         let csrfToken = document.querySelector(
           "[name=csrfmiddlewaretoken]"
         ).value;
 
         try {
           const response = await fetch("/posts/new/", {
-            // 🔥 修正 URL 確保正確
             method: "POST",
-            headers: {
-              "X-CSRFToken": csrfToken,
-            },
+            headers: { "X-CSRFToken": csrfToken },
             body: formData,
           });
 
@@ -98,6 +136,47 @@
           console.error("發生錯誤：", error);
           alert("發文時發生錯誤！");
         }
+
+        this.closeModal();
+      },
+
+      // 提交編輯貼文
+      async submitEditPost() {
+        if (!this.postContent.trim()) {
+          alert("內容不可為空！");
+          return;
+        }
+
+        let formData = new FormData();
+        formData.append("content", this.postContent);
+        formData.append("location", this.postLocation);
+        if (this.imageFile) {
+          formData.append("image", this.imageFile);
+        }
+
+        let csrfToken = document.querySelector(
+          "[name=csrfmiddlewaretoken]"
+        ).value;
+
+        try {
+          const response = await fetch(`/posts/${this.postId}/edit/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken },
+            body: formData,
+          });
+
+          if (response.ok) {
+            alert("貼文已更新成功！");
+            location.reload();
+          } else {
+            alert("更新失敗，請重試！");
+          }
+        } catch (error) {
+          console.error("錯誤：", error);
+          alert("更新過程中發生錯誤！");
+        }
+
+        this.closeModal();
       },
     }));
   });

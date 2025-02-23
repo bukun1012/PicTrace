@@ -54,7 +54,7 @@
     {% if user.is_authenticated %}
     <!-- 發布貼文按鈕 -->
     <button
-      @click="isPostModalOpen = true"
+      @click="openNewPostModal()"
       class="w-full py-3 text-lg font-bold text-white bg-blue-500 rounded-full hover:bg-blue-600"
     >
       發布貼文
