@@ -57,12 +57,12 @@
               class="absolute z-10 w-24 mt-2 overflow-hidden text-white bg-black border border-gray-700 rounded-md shadow-lg right-2 ring-1 ring-white ring-opacity-20"
             >
               <!-- 編輯 -->
-              <a
-                href="{% url 'posts:edit_post' post.id %}"
+              <button
+                @click.stop.prevent="openEditModal({{ post.id }}, '{{ post.content|escapejs }}', '{{ post.location|escapejs }}'); openMenu = false"
                 class="flex items-center w-full px-4 py-2 hover:bg-gray-700"
               >
                 <span>編輯</span>
-              </a>
+              </button>
 
               <!-- 置頂 -->
               <a
@@ -106,54 +106,5 @@
   <p class="mt-4 text-center text-gray-500">目前沒有貼文。</p>
   {% endif %}
 </section>
-
-<!-- Alpine.js 前端邏輯 -->
-<script>
-  document.addEventListener("alpine:init", () => {
-    Alpine.data("postModal", () => ({
-      isPostModalOpen: false,
-      postTitle: "",
-      postContent: "",
-      imageFile: null,
-
-      handleFileUpload(event) {
-        this.imageFile = event.target.files[0];
-      },
-
-      async submitPost() {
-        if (!this.postTitle || !this.postContent) {
-          alert("標題和內容不可為空！");
-          return;
-        }
-
-        let formData = new FormData();
-        formData.append("title", this.postTitle);
-        formData.append("content", this.postContent);
-        if (this.imageFile) {
-          formData.append("image", this.imageFile);
-        }
-
-        try {
-          const response = await fetch("{% url 'posts:create_post' %}", {
-            method: "POST",
-            headers: {
-              "X-CSRFToken": "{{ csrf_token }}",
-            },
-            body: formData,
-          });
-
-          if (response.ok) {
-            location.reload(); // 成功後重新整理頁面
-          } else {
-            alert("發文失敗，請重試");
-          }
-        } catch (error) {
-          console.error("發生錯誤：", error);
-          alert("發文時發生錯誤！");
-        }
-      },
-    }));
-  });
-</script>
 
 {% endblock %}
