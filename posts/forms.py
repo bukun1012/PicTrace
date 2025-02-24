@@ -1,5 +1,5 @@
 from django import forms
-from .models import Post
+from .models import Post, Comment
 
 
 class PostForm(forms.ModelForm):
@@ -21,3 +21,20 @@ class PostForm(forms.ModelForm):
             self.fields["image"].required = True
         else:
             self.fields["image"].required = False
+
+
+# ✅ 新增 CommentForm
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ["content"]  # 只需要用戶輸入留言內容
+        widgets = {
+            "content": forms.Textarea(
+                attrs={
+                    "placeholder": "撰寫留言...",
+                    "rows": 3,
+                    "class": "w-full p-2 border rounded-md",
+                }
+            )
+        }
+        labels = {"content": ""}
