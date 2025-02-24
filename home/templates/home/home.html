@@ -5,7 +5,8 @@
 </h1>
 
 <!-- 最新貼文 -->
-<section class="mt-8">
+<section class="mt-8" x-data="{ activeCommentPostId: null }">
+  <!-- Alpine.js Scope -->
   <h2 class="text-2xl font-bold text-center text-white">最新貼文</h2>
 
   {% if posts %}
@@ -13,128 +14,121 @@
     {% for post in posts %}
     <div
       class="relative p-4 bg-white rounded-lg shadow-md"
-      x-data="{ openMenu: false }"
+      x-data="{ openMenu: false, liked: {% if post.id in liked_posts %}true{% else %}false{% endif %}, likeCount: {{ post.like_count }}, commentModal: false }"
       @click.away="openMenu = false"
     >
-      <!-- 將整個卡片放在 <a> 標籤內 -->
-      <a
-        href="{% url 'posts:post_detail' post.id %}"
-        class="block"
-        @click="if(openMenu) $event.preventDefault()"
-      >
-        <!-- 貼文圖片 -->
-        {% if post.image_url %}
-        <img
-          src="{{ post.image_url }}"
-          alt="Post Image"
-          class="object-cover w-full rounded-md max-h-[400px]"
-        />
-        {% endif %}
+      <!-- 貼文圖片 -->
+      {% if post.image_url %}
+      <img
+        src="{{ post.image_url }}"
+        alt="Post Image"
+        class="object-cover w-full rounded-md max-h-[400px]"
+      />
+      {% endif %}
 
-        <!-- 位置和「...」按鈕 -->
-        <div class="flex items-center justify-between">
-          {% if post.location %}
-          <p class="text-sm text-gray-500">📍 {{ post.location }}</p>
-          {% endif %}
-
-          <!-- 三個點的選單按鈕 -->
-          {% if user == post.author %}
-          <div @click.stop class="relative">
-            <button
-              @click="openMenu = !openMenu"
-              class="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-200"
-              title="更多選項"
-            >
-              ⋯
-            </button>
-
-            <!-- 自訂樣式的下拉選單 -->
-            <div
-              x-show="openMenu"
-              @click.away="openMenu = false"
-              x-transition
-              class="absolute z-10 w-24 mt-2 overflow-hidden text-white bg-black border border-gray-700 rounded-md shadow-lg right-2 ring-1 ring-white ring-opacity-20"
-            >
-              <!-- 編輯 -->
-              <button
-                @click.stop.prevent="openEditModal({{ post.id }}, '{{ post.content|escapejs }}', '{{ post.location|escapejs }}', '{{ post.image_url|escapejs }}'); openMenu = false"
-                class="flex items-center w-full px-4 py-2 hover:bg-gray-700"
-              >
-                <span>編輯</span>
-              </button>
-
-              <!-- 置頂 -->
-              <a
-                href="#"
-                class="flex items-center w-full px-4 py-2 hover:bg-gray-700"
-              >
-                <span>置頂</span>
-              </a>
-
-              <!-- 刪除 -->
-              <form
-                action="{% url 'posts:delete_post' post.id %}"
-                method="POST"
-                onsubmit="return confirm('確定要刪除此貼文嗎？');"
-                class="w-full"
-              >
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  class="flex items-center w-full px-4 py-2 text-left text-red-500 hover:bg-gray-700"
-                >
-                  刪除
-                </button>
-              </form>
-            </div>
-          </div>
-          {% endif %}
-        </div>
-
-        <!-- 內容 -->
-        <p class="mt-2 text-gray-600">{{ post.content|truncatechars:50 }}</p>
+      <!-- 貼文內容 -->
+      <div class="mt-2">
+        <p class="text-gray-600">{{ post.content|truncatechars:50 }}</p>
         <p class="text-sm text-gray-500">
           由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }}
           前
         </p>
+      </div>
 
-        <!-- ❤️ 愛心按鈕 -->
-        <div
-          class="flex items-center mt-2"
-          x-data="{ liked: {% if post.id in liked_posts %}true{% else %}false{% endif %}, likeCount: {{ post.like_count }} }"
+      <!-- ❤️ 愛心按鈕 和 💬 留言按鈕 -->
+      <div class="flex items-center mt-2 space-x-4">
+        <!-- ❤️ 愛心 -->
+        <button
+          @click.stop.prevent="toggleLike({{ post.id }})"
+          :class="liked ? 'text-red-500' : 'text-gray-500'"
+          class="flex items-center space-x-1 focus:outline-none group"
+          data-post-id="{{ post.id }}"
         >
-          <button
-            @click.stop.prevent="toggleLike({{ post.id }})"
-            :class="liked ? 'text-red-500' : 'text-gray-500'"
-            class="flex items-center space-x-1 focus:outline-none group"
-            data-post-id="{{ post.id }}"
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+            :fill="liked ? 'currentColor' : 'none'"
+            viewBox="0 0 20 20"
+            stroke="currentColor"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
-              :fill="liked ? 'currentColor' : 'none'"
-              viewBox="0 0 20 20"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-              />
-            </svg>
-            <span x-text="likeCount"></span>
-          </button>
-        </div>
-      </a>
-    </div>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+            />
+          </svg>
+          <span x-text="likeCount"></span>
+        </button>
 
+        <!-- 💬 留言 -->
+        <button
+          @click="activeCommentPostId = {{ post.id }}"
+          class="flex items-center space-x-1 text-gray-500 focus:outline-none group"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 10h8M8 14h4m-6 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12l4-4z"
+            />
+          </svg>
+          <span>{{ post.annotated_comment_count }}</span>
+          <!-- 使用修改後的欄位 -->
+        </button>
+      </div>
+
+      <!-- 💬 留言彈窗 -->
+      <div
+        x-show="activeCommentPostId === {{ post.id }}"
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      >
+        <div class="p-6 bg-white rounded-lg shadow-lg w-96">
+          <h3 class="mb-4 text-lg font-bold">撰寫留言</h3>
+          <form method="post" action="{% url 'posts:add_comment' post.id %}">
+            {% csrf_token %}
+            <textarea
+              name="content"
+              rows="3"
+              placeholder="撰寫留言..."
+              class="w-full p-2 border rounded-lg focus:outline-none focus:ring"
+              required
+            ></textarea>
+            <div class="flex justify-end mt-4 space-x-2">
+              <button
+                type="button"
+                @click="activeCommentPostId = null"
+                class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+              >
+                發佈留言
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     {% endfor %}
   </div>
   {% else %}
   <p class="mt-4 text-center text-gray-500">目前沒有貼文。</p>
   {% endif %}
 </section>
+
+<!-- ❤️ 愛心功能 -->
 <script>
   function toggleLike(postId) {
     fetch(`/posts/like/${postId}/`, {

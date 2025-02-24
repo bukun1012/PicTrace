@@ -3,15 +3,16 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
-from posts.models import Post, Like
+from posts.models import Post, Like, Comment
+from django.db.models import Count
 
 
-# Create your views here.
 def home_view(request):
-    posts = Post.objects.all().order_by("-created_at")[
-        :5
-    ]  # 按照時間排序，最新的貼文在最上方
-    # 取得當前用戶已按愛心的貼文ID
+    # 使用不同名稱以避免衝突，例如：annotated_comment_count
+    posts = Post.objects.annotate(annotated_comment_count=Count("comments")).order_by(
+        "-created_at"
+    )[:5]
+
     liked_posts = []
     if request.user.is_authenticated:
         liked_posts = Like.objects.filter(user=request.user).values_list(
@@ -23,7 +24,7 @@ def home_view(request):
         "home/home.html",
         {
             "posts": posts,
-            "liked_posts": liked_posts,  # 傳遞已按愛心的貼文ID清單
+            "liked_posts": liked_posts,
         },
     )
 
