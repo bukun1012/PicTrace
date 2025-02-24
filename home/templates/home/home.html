@@ -19,27 +19,28 @@
     >
       <!-- 貼文圖片 -->
       {% if post.image_url %}
-      <img
-        src="{{ post.image_url }}"
-        alt="Post Image"
-        class="object-cover w-full rounded-md max-h-[400px]"
-      />
-      {% endif %}
+      <a href="{% url 'posts:post_detail' post.id %}">
+        <img
+          src="{{ post.image_url }}"
+          alt="Post Image"
+          class="object-cover w-full rounded-md max-h-[400px]"
+        />
+        {% endif %}
 
-      <!-- 位置 -->
-      {% if post.location %}
-      <p class="mt-2 text-sm text-gray-500">📍 {{ post.location }}</p>
-      {% endif %}
+        <!-- 位置 -->
+        {% if post.location %}
+        <p class="mt-2 text-sm text-gray-500">📍 {{ post.location }}</p>
+        {% endif %}
 
-      <!-- 貼文內容 -->
-      <div class="mt-2">
-        <p class="text-gray-600">{{ post.content|truncatechars:50 }}</p>
-        <p class="text-sm text-gray-500">
-          由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }}
-          前
-        </p>
-      </div>
-
+        <!-- 貼文內容 -->
+        <div class="mt-2">
+          <p class="text-gray-600">{{ post.content|truncatechars:50 }}</p>
+          <p class="text-sm text-gray-500">
+            由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }}
+            前
+          </p>
+        </div>
+      </a>
       <!-- ❤️ 愛心按鈕、💬 留言按鈕 和 「...」選單 -->
       <div class="flex items-center justify-between mt-2">
         <div class="flex items-center space-x-4">
