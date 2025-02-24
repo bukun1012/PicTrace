@@ -20,8 +20,22 @@
 
       <!-- 圖片 -->
       <label class="block mb-2">圖片：</label>
+
+      <!-- ✅ 顯示現有圖片或新增模式下的預覽 -->
+      <template x-if="existingImageUrl">
+        <div class="mb-3">
+          <img
+            :src="existingImageUrl"
+            alt="圖片預覽"
+            class="w-full rounded-md"
+          />
+        </div>
+      </template>
+
+      <!-- 上傳新圖片 -->
       <input
         type="file"
+        x-ref="fileInput"
         @change="handleFileUpload"
         class="mb-3"
         :required="!isEditing"
@@ -30,8 +44,8 @@
       <!-- 位置 -->
       <label class="block mb-2">位置 (選填)：</label>
       <input
-        type="text"
         x-model="postLocation"
+        type="text"
         class="w-full px-3 py-2 mb-3 border rounded-md"
         placeholder="例如：台北101"
       />
@@ -65,28 +79,41 @@
       postContent: "",
       postLocation: "",
       imageFile: null,
+      existingImageUrl: "", // ✅ 儲存現有圖片的 URL
 
       // 打開新增貼文 Modal
       openNewPostModal() {
-        this.isEditing = false; // 確保是新增模式
+        this.isEditing = false;
         this.postId = null;
         this.postContent = "";
         this.postLocation = "";
         this.imageFile = null;
+        this.existingImageUrl = ""; // 清除現有圖片
         this.isPostModalOpen = true;
+
+        // ✅ 清除 file input 選擇的圖片
+        this.$nextTick(() => {
+          this.$refs.fileInput.value = null;
+        });
       },
 
       // 打開編輯貼文 Modal
-      openEditModal(postId, content, location) {
-        this.isEditing = true; // 編輯模式
+      openEditModal(postId, content, location, imageUrl) {
+        this.isEditing = true;
         this.postId = postId;
         this.postContent = content;
         this.postLocation = location;
-        this.imageFile = null; // 清除圖片欄位（或保留根據需求）
+        this.imageFile = null;
+        this.existingImageUrl = imageUrl || ""; // ✅ 設定現有圖片的 URL
         this.isPostModalOpen = true;
+
+        // ✅ 清除 file input
+        this.$nextTick(() => {
+          this.$refs.fileInput.value = null;
+        });
       },
 
-      // 關閉 Modal 並重置狀態
+      // 關閉 Modal
       closeModal() {
         this.isPostModalOpen = false;
         this.isEditing = false;
@@ -94,11 +121,27 @@
         this.postContent = "";
         this.postLocation = "";
         this.imageFile = null;
+        this.existingImageUrl = "";
+
+        // ✅ 確保關閉時清除 file input
+        this.$nextTick(() => {
+          this.$refs.fileInput.value = null;
+        });
       },
 
-      // 上傳圖片
+      // ✅ 上傳圖片並即時顯示預覽
       handleFileUpload(event) {
         this.imageFile = event.target.files[0];
+
+        if (this.imageFile) {
+          const reader = new FileReader();
+
+          reader.onload = (e) => {
+            this.existingImageUrl = e.target.result; // ✅ 將 existingImageUrl 設為新圖片預覽
+          };
+
+          reader.readAsDataURL(this.imageFile); // ✅ 讀取圖片並轉為 Base64
+        }
       },
 
       // 提交新增貼文
@@ -108,12 +151,15 @@
           return;
         }
 
+        if (!this.imageFile) {
+          alert("請選擇圖片！");
+          return;
+        }
+
         let formData = new FormData();
         formData.append("content", this.postContent);
         formData.append("location", this.postLocation);
-        if (this.imageFile) {
-          formData.append("image", this.imageFile);
-        }
+        formData.append("image", this.imageFile);
 
         let csrfToken = document.querySelector(
           "[name=csrfmiddlewaretoken]"
@@ -150,6 +196,8 @@
         let formData = new FormData();
         formData.append("content", this.postContent);
         formData.append("location", this.postLocation);
+
+        // ✅ 如果使用者選擇新圖片，才附加到 formData
         if (this.imageFile) {
           formData.append("image", this.imageFile);
         }
@@ -165,11 +213,20 @@
             body: formData,
           });
 
-          if (response.ok) {
-            alert("貼文已更新成功！");
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            alert(data.message || "貼文已更新成功！");
             location.reload();
           } else {
-            alert("更新失敗，請重試！");
+            let errorMessage = data.error || "更新失敗";
+            if (data.details) {
+              const errors = JSON.parse(data.details);
+              for (let field in errors) {
+                errorMessage += `\n${field}: ${errors[field][0].message}`;
+              }
+            }
+            alert(errorMessage);
           }
         } catch (error) {
           console.error("錯誤：", error);
