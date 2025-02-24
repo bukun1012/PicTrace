@@ -1,7 +1,7 @@
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Post, Like
-from .forms import PostForm
+from .models import Post, Like, Comment
+from .forms import PostForm, CommentForm
 from users.utils import upload_to_s3
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -142,17 +142,28 @@ def delete_post(request, post_id):
     return HttpResponseForbidden("無效的請求方法。")
 
 
-# 點擊看詳細貼文
+# 點擊看詳細貼文並顯示留言
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     user_has_liked = False
     if request.user.is_authenticated:
         user_has_liked = Like.objects.filter(user=request.user, post=post).exists()
 
+    # ✅ 獲取貼文的留言
+    comments = Comment.objects.filter(post=post).order_by("-created_at")
+
+    # ✅ 留言表單
+    comment_form = CommentForm()
+
     return render(
         request,
         "posts/post_detail.html",
-        {"post": post, "user_has_liked": user_has_liked},
+        {
+            "post": post,
+            "user_has_liked": user_has_liked,
+            "comments": comments,
+            "comment_form": comment_form,
+        },
     )
 
 
@@ -180,3 +191,25 @@ def toggle_like(request, post_id):
             "like_count": post.likes.count(),
         }
     )
+
+
+# ✅ 新增留言
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.method == "POST":
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.author = request.user
+            comment.post = post
+            comment.save()
+
+            messages.success(request, "留言已成功發布！")
+            return redirect("posts:post_detail", post_id=post.id)
+        else:
+            messages.error(request, "留言內容無效，請再試一次。")
+            return redirect("posts:post_detail", post_id=post.id)
+
+    return HttpResponseForbidden("無效的請求方法。")

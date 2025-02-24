@@ -1,4 +1,5 @@
 {% extends "shared/layout.html" %} {% load static %} {% block content %}
+
 <div
   class="max-w-3xl p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg"
   x-data="{ liked: {{ user_has_liked|yesno:'true,false' }}, likeCount: {{ post.like_count }} }"
@@ -48,6 +49,55 @@
     </button>
   </div>
 
+  <!-- 💬 留言區域 -->
+  <div class="mt-6">
+    <h3 class="mb-4 text-xl font-bold">留言</h3>
+
+    <!-- 留言表單 (移到留言列表的上方) -->
+    {% if user.is_authenticated %}
+    <form
+      method="post"
+      action="{% url 'posts:add_comment' post.id %}"
+      class="mb-6"
+    >
+      {% csrf_token %}
+      <textarea
+        name="content"
+        rows="3"
+        placeholder="撰寫留言..."
+        class="w-full p-2 border rounded-lg focus:outline-none focus:ring"
+        required
+      ></textarea>
+      <button
+        type="submit"
+        class="px-4 py-2 mt-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+      >
+        發佈留言
+      </button>
+    </form>
+    {% else %}
+    <p class="mt-4 text-gray-600">
+      <a href="{% url 'account_login' %}" class="text-blue-500">登入</a>
+      以留言。
+    </p>
+    {% endif %}
+
+    <!-- 留言列表 -->
+    <div class="space-y-4">
+      {% for comment in comments %}
+      <div class="p-4 bg-gray-100 rounded-lg">
+        <p class="font-semibold">{{ comment.author.username }}</p>
+        <p class="text-gray-700">{{ comment.content }}</p>
+        <p class="text-sm text-gray-500">
+          {{ comment.created_at|timesince }} 前
+        </p>
+      </div>
+      {% empty %}
+      <p class="text-gray-500">還沒有留言，成為第一個留言的人吧！</p>
+      {% endfor %}
+    </div>
+  </div>
+
   <!-- 返回按鈕 -->
   <div class="mt-6">
     <a href="{% url 'home:home' %}" class="text-blue-500">← 返回首頁</a>
@@ -79,4 +129,5 @@
       .catch((error) => console.error("錯誤:", error));
   }
 </script>
+
 {% endblock %}

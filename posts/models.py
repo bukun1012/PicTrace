@@ -16,6 +16,11 @@ class Post(models.Model):
     def like_count(self):
         return self.likes.count()
 
+    # 計算留言數量
+    @property
+    def comment_count(self):
+        return self.comments.count()
+
     def __str__(self):
         return f"{self.author.username} 的貼文 - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
 
@@ -31,3 +36,16 @@ class Like(models.Model):
 
     def __str__(self):
         return f"{self.user.username} liked {self.post.id}"
+
+
+# ✅ 新增 Comment 模型
+class Comment(models.Model):
+    post = models.ForeignKey(
+        Post, related_name="comments", on_delete=models.CASCADE
+    )  # 關聯到貼文
+    author = models.ForeignKey(User, on_delete=models.CASCADE)  # 留言的用戶
+    content = models.TextField()  # 留言內容
+    created_at = models.DateTimeField(auto_now_add=True)  # 留言時間
+
+    def __str__(self):
+        return f"{self.author.username} 在 {self.post.id} 留言: {self.content[:20]}"
