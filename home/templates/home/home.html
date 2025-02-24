@@ -58,7 +58,7 @@
             >
               <!-- 編輯 -->
               <button
-                @click.stop.prevent="openEditModal({{ post.id }}, '{{ post.content|escapejs }}', '{{ post.location|escapejs }}'); openMenu = false"
+                @click.stop.prevent="openEditModal({{ post.id }}, '{{ post.content|escapejs }}', '{{ post.location|escapejs }}', '{{ post.image_url|escapejs }}'); openMenu = false"
                 class="flex items-center w-full px-4 py-2 hover:bg-gray-700"
               >
                 <span>編輯</span>

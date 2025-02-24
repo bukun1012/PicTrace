@@ -12,3 +12,12 @@ class PostForm(forms.ModelForm):
             "content": forms.Textarea(attrs={"placeholder": "說點什麼...", "rows": 4}),
             "location": forms.TextInput(attrs={"placeholder": "新增地點（選填）"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(PostForm, self).__init__(*args, **kwargs)
+
+        # 如果是新增貼文，圖片為必填；編輯貼文時圖片為非必填
+        if not self.instance.pk:
+            self.fields["image"].required = True
+        else:
+            self.fields["image"].required = False
