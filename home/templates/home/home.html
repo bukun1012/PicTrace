@@ -16,7 +16,7 @@
       x-data="{ openMenu: false }"
       @click.away="openMenu = false"
     >
-      <!-- 將點擊區域限制在內容部分，並防止「...」影響點擊 -->
+      <!-- 將整個卡片放在 <a> 標籤內 -->
       <a
         href="{% url 'posts:post_detail' post.id %}"
         class="block"
@@ -40,7 +40,6 @@
           <!-- 三個點的選單按鈕 -->
           {% if user == post.author %}
           <div @click.stop class="relative">
-            <!-- ...按鈕 -->
             <button
               @click="openMenu = !openMenu"
               class="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-200"
@@ -98,13 +97,68 @@
           由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }}
           前
         </p>
+
+        <!-- ❤️ 愛心按鈕 -->
+        <div
+          class="flex items-center mt-2"
+          x-data="{ liked: {% if post.id in liked_posts %}true{% else %}false{% endif %}, likeCount: {{ post.like_count }} }"
+        >
+          <button
+            @click.stop.prevent="toggleLike({{ post.id }})"
+            :class="liked ? 'text-red-500' : 'text-gray-500'"
+            class="flex items-center space-x-1 focus:outline-none group"
+            data-post-id="{{ post.id }}"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+              :fill="liked ? 'currentColor' : 'none'"
+              viewBox="0 0 20 20"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+              />
+            </svg>
+            <span x-text="likeCount"></span>
+          </button>
+        </div>
       </a>
     </div>
+
     {% endfor %}
   </div>
   {% else %}
   <p class="mt-4 text-center text-gray-500">目前沒有貼文。</p>
   {% endif %}
 </section>
+<script>
+  function toggleLike(postId) {
+    fetch(`/posts/like/${postId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.liked !== undefined) {
+          const likeButton = document.querySelector(
+            `button[data-post-id="${postId}"]`
+          );
+          if (likeButton) {
+            likeButton.classList.toggle("text-red-500", data.liked);
+            likeButton.classList.toggle("text-gray-500", !data.liked);
+            likeButton.querySelector("span").textContent = data.like_count;
+          }
+        }
+      })
+      .catch((error) => console.error("錯誤:", error));
+  }
+</script>
 
 {% endblock %}

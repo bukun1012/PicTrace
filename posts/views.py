@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Post
+from .models import Post, Like
 from .forms import PostForm
 from users.utils import upload_to_s3
 from django.contrib.auth.decorators import login_required
@@ -145,4 +145,38 @@ def delete_post(request, post_id):
 # 點擊看詳細貼文
 def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    return render(request, "posts/post_detail.html", {"post": post})
+    user_has_liked = False
+    if request.user.is_authenticated:
+        user_has_liked = Like.objects.filter(user=request.user, post=post).exists()
+
+    return render(
+        request,
+        "posts/post_detail.html",
+        {"post": post, "user_has_liked": user_has_liked},
+    )
+
+
+# 按愛心/取消愛心的 API
+@login_required
+def toggle_like(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    user = request.user
+
+    # 檢查用戶是否已經按過愛心
+    liked = Like.objects.filter(user=user, post=post).first()
+
+    if liked:
+        # 如果已經按過，則取消愛心
+        liked.delete()
+        liked_status = False
+    else:
+        # 尚未按過，新增一個 Like
+        Like.objects.create(user=user, post=post)
+        liked_status = True
+
+    return JsonResponse(
+        {
+            "liked": liked_status,
+            "like_count": post.likes.count(),
+        }
+    )

@@ -1,5 +1,8 @@
 {% extends "shared/layout.html" %} {% load static %} {% block content %}
-<div class="max-w-3xl p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg">
+<div
+  class="max-w-3xl p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg"
+  x-data="{ liked: {{ user_has_liked|yesno:'true,false' }}, likeCount: {{ post.like_count }} }"
+>
   {% if post.image_url %}
   <img
     src="{{ post.image_url }}"
@@ -19,11 +22,29 @@
     發布於 {{ post.created_at|date:"Y-m-d H:i" }}
   </p>
 
-  <!-- 假設未來會有按讚和留言功能 -->
-  <div class="flex mt-4 space-x-4">
-    <button class="px-4 py-2 text-white bg-blue-500 rounded-lg">👍 喜歡</button>
-    <button class="px-4 py-2 text-gray-800 bg-gray-300 rounded-lg">
-      💬 留言
+  <!-- ❤️ 愛心按鈕 -->
+  <div class="flex items-center mt-4 space-x-4">
+    <button
+      @click.stop.prevent="toggleLike({{ post.id }})"
+      :class="liked ? 'text-red-500' : 'text-gray-500'"
+      class="flex items-center space-x-1 focus:outline-none group"
+      data-post-id="{{ post.id }}"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+        :fill="liked ? 'currentColor' : 'none'"
+        viewBox="0 0 20 20"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+        />
+      </svg>
+      <span x-text="likeCount"></span>
     </button>
   </div>
 
@@ -32,4 +53,30 @@
     <a href="{% url 'home:home' %}" class="text-blue-500">← 返回首頁</a>
   </div>
 </div>
+
+<script>
+  function toggleLike(postId) {
+    fetch(`/posts/like/${postId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.liked !== undefined) {
+          const likeButton = document.querySelector(
+            `button[data-post-id="${postId}"]`
+          );
+          if (likeButton) {
+            likeButton.classList.toggle("text-red-500", data.liked);
+            likeButton.classList.toggle("text-gray-500", !data.liked);
+            likeButton.querySelector("span").textContent = data.like_count;
+          }
+        }
+      })
+      .catch((error) => console.error("錯誤:", error));
+  }
+</script>
 {% endblock %}
