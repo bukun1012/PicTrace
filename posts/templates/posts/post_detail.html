@@ -1,106 +1,167 @@
 {% extends "shared/layout.html" %} {% load static %} {% block content %}
 
+<!-- 將 x-data 提到最外層 -->
 <div
-  class="max-w-3xl p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg"
-  x-data="{ liked: {{ user_has_liked|yesno:'true,false' }}, likeCount: {{ post.like_count }} }"
+  x-data="{ liked: {{ user_has_liked|yesno:'true,false' }}, likeCount: {{ post.like_count }}, commentModal: false }"
 >
-  {% if post.image_url %}
-  <img
-    src="{{ post.image_url }}"
-    alt="Post Image"
-    class="w-full mb-4 rounded-md"
-  />
-  {% endif %}
-
-  <h2 class="mb-2 text-2xl font-bold">{{ post.author.username }} 的貼文</h2>
-  <p class="mb-4 text-gray-600">{{ post.content }}</p>
-
-  {% if post.location %}
-  <p class="mb-2 text-gray-500">📍 {{ post.location }}</p>
-  {% endif %}
-
-  <p class="text-sm text-gray-400">
-    發布於 {{ post.created_at|date:"Y-m-d H:i" }}
-  </p>
-
-  <!-- ❤️ 愛心按鈕 -->
-  <div class="flex items-center mt-4 space-x-4">
-    <button
-      @click.stop.prevent="toggleLike({{ post.id }})"
-      :class="liked ? 'text-red-500' : 'text-gray-500'"
-      class="flex items-center space-x-1 focus:outline-none group"
-      data-post-id="{{ post.id }}"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
-        :fill="liked ? 'currentColor' : 'none'"
-        viewBox="0 0 20 20"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-        />
-      </svg>
-      <span x-text="likeCount"></span>
-    </button>
-  </div>
-
-  <!-- 💬 留言區域 -->
-  <div class="mt-6">
-    <h3 class="mb-4 text-xl font-bold">留言</h3>
-
-    <!-- 留言表單 (移到留言列表的上方) -->
-    {% if user.is_authenticated %}
-    <form
-      method="post"
-      action="{% url 'posts:add_comment' post.id %}"
-      class="mb-6"
-    >
-      {% csrf_token %}
-      <textarea
-        name="content"
-        rows="3"
-        placeholder="撰寫留言..."
-        class="w-full p-2 border rounded-lg focus:outline-none focus:ring"
-        required
-      ></textarea>
-      <button
-        type="submit"
-        class="px-4 py-2 mt-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-      >
-        發佈留言
-      </button>
-    </form>
-    {% else %}
-    <p class="mt-4 text-gray-600">
-      <a href="{% url 'account_login' %}" class="text-blue-500">登入</a>
-      以留言。
-    </p>
+  <div class="max-w-3xl p-6 mx-auto mt-10 bg-white rounded-lg shadow-lg">
+    {% if post.image_url %}
+    <img
+      src="{{ post.image_url }}"
+      alt="Post Image"
+      class="w-full mb-4 rounded-md"
+    />
     {% endif %}
 
-    <!-- 留言列表 -->
-    <div class="space-y-4">
-      {% for comment in comments %}
-      <div class="p-4 bg-gray-100 rounded-lg">
-        <p class="font-semibold">{{ comment.author.username }}</p>
-        <p class="text-gray-700">{{ comment.content }}</p>
-        <p class="text-sm text-gray-500">
-          {{ comment.created_at|timesince }} 前
-        </p>
+    <h2 class="mb-2 text-2xl font-bold">{{ post.author.username }} 的貼文</h2>
+    <p class="mb-4 text-gray-600">{{ post.content }}</p>
+
+    {% if post.location %}
+    <p class="mb-2 text-gray-500">📍 {{ post.location }}</p>
+    {% endif %}
+
+    <p class="text-sm text-gray-400">
+      發布於 {{ post.created_at|date:"Y-m-d H:i" }}
+    </p>
+
+    <!-- ❤️ 愛心按鈕 和 💬 留言按鈕 -->
+    <div class="flex items-center mt-4 space-x-4">
+      <!-- 愛心按鈕 -->
+      <button
+        @click.stop.prevent="toggleLike({{ post.id }})"
+        :class="liked ? 'text-red-500' : 'text-gray-500'"
+        class="flex items-center space-x-1 focus:outline-none group"
+        data-post-id="{{ post.id }}"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+          :fill="liked ? 'currentColor' : 'none'"
+          viewBox="0 0 20 20"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+          />
+        </svg>
+        <span x-text="likeCount"></span>
+      </button>
+
+      <!-- 💬 留言按鈕 -->
+      <button
+        @click="commentModal = true"
+        class="flex items-center space-x-1 text-gray-500 focus:outline-none group"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8 10h8M8 14h4m-6 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12l4-4z"
+          />
+        </svg>
+        <span>{{ comments|length }}</span>
+      </button>
+    </div>
+
+    <!-- 💬 留言區域 -->
+    <div class="mt-6">
+      <h3 class="mb-4 text-xl font-bold">留言</h3>
+
+      <!-- 留言表單 -->
+      {% if user.is_authenticated %}
+      <form
+        method="post"
+        action="{% url 'posts:add_comment' post.id %}"
+        class="mb-6"
+      >
+        {% csrf_token %}
+        <textarea
+          name="content"
+          rows="3"
+          placeholder="撰寫留言..."
+          class="w-full p-2 border rounded-lg focus:outline-none focus:ring"
+          required
+        ></textarea>
+        <button
+          type="submit"
+          class="px-4 py-2 mt-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+        >
+          發佈留言
+        </button>
+      </form>
+      {% else %}
+      <p class="mt-4 text-gray-600">
+        <a href="{% url 'account_login' %}" class="text-blue-500">登入</a>
+        以留言。
+      </p>
+      {% endif %}
+
+      <!-- 留言列表 -->
+      <div class="space-y-4">
+        {% for comment in comments %}
+        <div class="p-4 bg-gray-100 rounded-lg">
+          <p class="font-semibold">{{ comment.author.username }}</p>
+          <p class="text-gray-700">{{ comment.content }}</p>
+          <p class="text-sm text-gray-500">
+            {{ comment.created_at|timesince }} 前
+          </p>
+        </div>
+        {% empty %}
+        <p class="text-gray-500">還沒有留言，成為第一個留言的人吧！</p>
+        {% endfor %}
       </div>
-      {% empty %}
-      <p class="text-gray-500">還沒有留言，成為第一個留言的人吧！</p>
-      {% endfor %}
+    </div>
+
+    <!-- 返回按鈕 -->
+    <div class="mt-6">
+      <a href="{% url 'home:home' %}" class="text-blue-500">← 返回首頁</a>
     </div>
   </div>
 
-  <!-- 返回按鈕 -->
-  <div class="mt-6">
-    <a href="{% url 'home:home' %}" class="text-blue-500">← 返回首頁</a>
+  <!-- 留言彈窗 -->
+  <div
+    x-show="commentModal"
+    x-cloak
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  >
+    <div class="p-6 bg-white rounded-lg shadow-lg w-96">
+      <h3 class="mb-4 text-lg font-bold">撰寫留言</h3>
+      <form method="post" action="{% url 'posts:add_comment' post.id %}">
+        {% csrf_token %}
+        <textarea
+          name="content"
+          rows="3"
+          placeholder="撰寫留言..."
+          class="w-full p-2 border rounded-lg focus:outline-none focus:ring"
+          required
+        ></textarea>
+        <div class="flex justify-end mt-4 space-x-2">
+          <button
+            type="button"
+            @click="commentModal = false"
+            class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400"
+          >
+            取消
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+          >
+            發佈留言
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
