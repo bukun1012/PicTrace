@@ -3,7 +3,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
-from posts.models import Post
+from posts.models import Post, Like
 
 
 # Create your views here.
@@ -11,7 +11,21 @@ def home_view(request):
     posts = Post.objects.all().order_by("-created_at")[
         :5
     ]  # 按照時間排序，最新的貼文在最上方
-    return render(request, "home/home.html", {"posts": posts})
+    # 取得當前用戶已按愛心的貼文ID
+    liked_posts = []
+    if request.user.is_authenticated:
+        liked_posts = Like.objects.filter(user=request.user).values_list(
+            "post_id", flat=True
+        )
+
+    return render(
+        request,
+        "home/home.html",
+        {
+            "posts": posts,
+            "liked_posts": liked_posts,  # 傳遞已按愛心的貼文ID清單
+        },
+    )
 
 
 # 帳號激活驗證
