@@ -199,17 +199,21 @@ def add_comment(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.author = request.user
-            comment.post = post
-            comment.save()
+        content = request.POST.get("content", "").strip()
 
-            messages.success(request, "留言已成功發布！")
-            return redirect("posts:post_detail", post_id=post.id)
-        else:
-            messages.error(request, "留言內容無效，請再試一次。")
-            return redirect("posts:post_detail", post_id=post.id)
+        if content:
+            # 新增留言
+            Comment.objects.create(post=post, author=request.user, content=content)
 
-    return HttpResponseForbidden("無效的請求方法。")
+            # 回傳成功訊息和更新後的留言數
+            return JsonResponse(
+                {
+                    "success": True,
+                    "comment_count": post.comments.count(),  # 確認 post.comments 設置正確
+                }
+            )
+
+        # 處理空留言內容
+        return JsonResponse({"success": False, "error": "留言內容不能為空"})
+
+    return HttpResponseForbidden("不允許的請求方法")

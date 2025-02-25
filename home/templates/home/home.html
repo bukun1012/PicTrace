@@ -5,8 +5,7 @@
 </h1>
 
 <!-- 最新貼文 -->
-<section class="mt-8" x-data="{ activeCommentPostId: null }">
-  <!-- Alpine.js Scope -->
+<section class="mt-8">
   <h2 class="text-2xl font-bold text-center text-white">最新貼文</h2>
 
   {% if posts %}
@@ -14,7 +13,7 @@
     {% for post in posts %}
     <div
       class="relative p-4 bg-white rounded-lg shadow-md"
-      x-data="{ openMenu: false, liked: {% if post.id in liked_posts %}true{% else %}false{% endif %}, likeCount: {{ post.like_count }}, commentModal: false }"
+      x-data="postComponent({{ post.id }}, {{ post.like_count }}, {{ post.annotated_comment_count }}, {% if post.id in liked_posts %}true{% else %}false{% endif %})"
       @click.away="openMenu = false"
     >
       <!-- 貼文圖片 -->
@@ -25,75 +24,20 @@
           alt="Post Image"
           class="object-cover w-full rounded-md max-h-[400px]"
         />
-        {% endif %}
+      </a>
+      {% endif %}
 
+      <!-- 位置和「...」選單 -->
+      <div class="flex items-center justify-between mt-2">
         <!-- 位置 -->
         {% if post.location %}
-        <p class="mt-2 text-sm text-gray-500">📍 {{ post.location }}</p>
+        <p class="text-sm text-gray-500">📍 {{ post.location }}</p>
         {% endif %}
 
-        <!-- 貼文內容 -->
-        <div class="mt-2">
-          <p class="text-gray-600">{{ post.content|truncatechars:50 }}</p>
-          <p class="text-sm text-gray-500">
-            由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }}
-            前
-          </p>
-        </div>
-      </a>
-      <!-- ❤️ 愛心按鈕、💬 留言按鈕 和 「...」選單 -->
-      <div class="flex items-center justify-between mt-2">
-        <div class="flex items-center space-x-4">
-          <!-- ❤️ 愛心 -->
-          <button
-            @click.stop.prevent="toggleLike({{ post.id }})"
-            :class="liked ? 'text-red-500' : 'text-gray-500'"
-            class="flex items-center space-x-1 focus:outline-none group"
-            data-post-id="{{ post.id }}"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
-              :fill="liked ? 'currentColor' : 'none'"
-              viewBox="0 0 20 20"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-              />
-            </svg>
-            <span x-text="likeCount"></span>
-          </button>
-
-          <!-- 💬 留言 -->
-          <button
-            @click="activeCommentPostId = {{ post.id }}"
-            class="flex items-center space-x-1 text-gray-500 focus:outline-none group"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 10h8M8 14h4m-6 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12l4-4z"
-              />
-            </svg>
-            <span>{{ post.annotated_comment_count }}</span>
-          </button>
-        </div>
-
-        <!-- 「...」選單 -->
+        <!-- ... 按鈕選單 -->
         {% if user == post.author %}
         <div @click.stop class="relative">
+          <!-- ... 按鈕 -->
           <button
             @click="openMenu = !openMenu"
             class="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-200"
@@ -102,12 +46,12 @@
             ⋯
           </button>
 
-          <!-- 自訂樣式的下拉選單 -->
+          <!-- 下拉選單 -->
           <div
             x-show="openMenu"
             @click.away="openMenu = false"
             x-transition
-            class="absolute right-0 z-10 w-24 mt-2 overflow-hidden text-white bg-black border border-gray-700 rounded-md shadow-lg ring-1 ring-white ring-opacity-20"
+            class="absolute z-10 w-24 mt-2 overflow-hidden text-white bg-black border border-gray-700 rounded-md shadow-lg right-2 ring-1 ring-white ring-opacity-20"
           >
             <!-- 編輯 -->
             <button
@@ -145,18 +89,75 @@
         {% endif %}
       </div>
 
+      <!-- 貼文內容 -->
+      <div class="mt-2">
+        <p class="text-gray-600">{{ post.content|truncatechars:50 }}</p>
+        <p class="text-sm text-gray-500">
+          由 {{ post.author.username }} 發布於 {{ post.created_at|timesince }}
+          前
+        </p>
+      </div>
+
+      <!-- ❤️ 愛心按鈕、💬 留言按鈕 -->
+      <div class="flex items-center mt-2 space-x-4">
+        <!-- ❤️ 愛心 -->
+        <button
+          @click="toggleLike"
+          :class="liked ? 'text-red-500' : 'text-gray-500'"
+          class="flex items-center space-x-1 focus:outline-none group"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+            :fill="liked ? 'currentColor' : 'none'"
+            viewBox="0 0 20 20"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+            />
+          </svg>
+          <span x-text="likeCount"></span>
+        </button>
+
+        <!-- 💬 留言 -->
+        <button
+          @click="activeCommentPostId = postId"
+          class="flex items-center space-x-1 text-gray-500 focus:outline-none group"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-6 h-6 transition-transform duration-200 group-hover:scale-110"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 10h8M8 14h4m-6 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12l4-4z"
+            />
+          </svg>
+          <span x-text="commentCount"></span>
+        </button>
+      </div>
+
       <!-- 💬 留言彈窗 -->
       <div
-        x-show="activeCommentPostId === {{ post.id }}"
+        x-show="activeCommentPostId === postId"
         x-cloak
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       >
         <div class="p-6 bg-white rounded-lg shadow-lg w-96">
           <h3 class="mb-4 text-lg font-bold">撰寫留言</h3>
-          <form method="post" action="{% url 'posts:add_comment' post.id %}">
+          <form @submit.prevent="submitComment">
             {% csrf_token %}
             <textarea
-              name="content"
+              x-model="newComment"
               rows="3"
               placeholder="撰寫留言..."
               class="w-full p-2 border rounded-lg focus:outline-none focus:ring"
@@ -188,31 +189,89 @@
   {% endif %}
 </section>
 
-<!-- ❤️ 愛心功能 -->
+<!-- Alpine.js 組件 -->
 <script>
-  function toggleLike(postId) {
-    fetch(`/posts/like/${postId}/`, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": "{{ csrf_token }}",
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.liked !== undefined) {
-          const likeButton = document.querySelector(
-            `button[data-post-id="${postId}"]`
-          );
-          if (likeButton) {
-            likeButton.classList.toggle("text-red-500", data.liked);
-            likeButton.classList.toggle("text-gray-500", !data.liked);
-            likeButton.querySelector("span").textContent = data.like_count;
+  document.addEventListener("alpine:init", () => {
+    Alpine.data(
+      "postComponent",
+      (postId, initialLikeCount, initialCommentCount, isLiked) => ({
+        postId: postId,
+        likeCount: initialLikeCount,
+        commentCount: initialCommentCount,
+        liked: isLiked,
+        activeCommentPostId: null,
+        newComment: "",
+        openMenu: false,
+
+        // 獲取 CSRF Token
+        getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                  cookie.substring(name.length + 1)
+                );
+                break;
+              }
+            }
           }
-        }
+          return cookieValue;
+        },
+
+        // 愛心功能
+        toggleLike() {
+          fetch(`/posts/like/${this.postId}/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": this.getCookie("csrftoken"),
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.liked !== undefined) {
+                this.liked = data.liked;
+                this.likeCount = data.like_count;
+              }
+            })
+            .catch((error) => console.error("錯誤:", error));
+        },
+
+        // 提交留言功能
+        submitComment() {
+          if (!this.newComment.trim()) {
+            alert("留言內容不能為空！");
+            return;
+          }
+
+          fetch(`/posts/${this.postId}/comment/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": this.getCookie("csrftoken"),
+            },
+            body: new URLSearchParams({ content: this.newComment }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                this.commentCount = data.comment_count;
+                this.newComment = "";
+                this.activeCommentPostId = null;
+              } else {
+                alert(data.error || "留言提交失敗");
+              }
+            })
+            .catch((error) => {
+              console.error("留言錯誤:", error);
+              alert("發生錯誤，請稍後再試。");
+            });
+        },
       })
-      .catch((error) => console.error("錯誤:", error));
-  }
+    );
+  });
 </script>
 
 {% endblock %}
