@@ -205,13 +205,7 @@ def add_comment(request, post_id):
             # 新增留言
             Comment.objects.create(post=post, author=request.user, content=content)
 
-            # 回傳成功訊息和更新後的留言數
-            return JsonResponse(
-                {
-                    "success": True,
-                    "comment_count": post.comments.count(),  # 確認 post.comments 設置正確
-                }
-            )
+            return redirect("posts:post_detail", post_id=post_id)
 
         # 處理空留言內容
         return JsonResponse({"success": False, "error": "留言內容不能為空"})
