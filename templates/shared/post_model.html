@@ -224,8 +224,9 @@
           const data = await response.json();
 
           if (response.ok && data.success) {
-            alert(data.message || "貼文已更新成功！");
-            location.reload();
+            // ✅ 不使用 alert，直接關閉 Modal 並重新載入或更新 DOM
+            this.closeModal();
+            location.reload(); // ✅ 重新載入頁面以顯示更新後的貼文
           } else {
             let errorMessage = data.error || "更新失敗";
             if (data.details) {
@@ -234,14 +235,12 @@
                 errorMessage += `\n${field}: ${errors[field][0].message}`;
               }
             }
-            alert(errorMessage);
+            alert(errorMessage); // ⚠️ 僅保留錯誤提示
           }
         } catch (error) {
           console.error("錯誤：", error);
           alert("更新過程中發生錯誤！");
         }
-
-        this.closeModal();
       },
     }));
   });
