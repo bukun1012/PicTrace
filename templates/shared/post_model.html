@@ -81,6 +81,14 @@
       imageFile: null,
       existingImageUrl: "", // ✅ 儲存現有圖片的 URL
 
+      init() {
+        // 監聽 'open-edit-modal' 事件
+        this.$root.addEventListener("open-edit-modal", (event) => {
+          const { postId, content, location, imageUrl } = event.detail;
+          this.openEditModal(postId, content, location, imageUrl);
+        });
+      },
+
       // 打開新增貼文 Modal
       openNewPostModal() {
         this.isEditing = false;
