@@ -111,12 +111,75 @@
       <!-- 留言列表 -->
       <div class="space-y-4" id="commentsList">
         {% for comment in comments %}
-        <div class="p-4 bg-gray-100 rounded-lg">
+        <div
+          class="relative p-4 bg-gray-100 rounded-lg"
+          x-data="{ isEditing: false, showMenu: false, editContent: '{{ comment.content|escapejs }}' }"
+        >
+          <!-- 留言者名稱 -->
           <p class="font-semibold">{{ comment.author.username }}</p>
-          <p class="text-gray-700">{{ comment.content }}</p>
+
+          <!-- 顯示模式 -->
+          <p x-show="!isEditing" class="text-gray-700" x-text="editContent"></p>
+
+          <!-- 編輯模式 -->
+          <div x-show="isEditing" class="mt-2">
+            <textarea
+              x-model="editContent"
+              rows="2"
+              class="w-full p-2 border rounded-md"
+            ></textarea>
+            <div class="flex justify-end mt-2">
+              <button
+                @click="isEditing = false"
+                class="px-3 py-1 mr-2 bg-gray-300 rounded-lg"
+              >
+                取消
+              </button>
+              <button
+                @click="updateComment($el.getAttribute('data-comment-id'), editContent)"
+                class="px-3 py-1 text-white bg-blue-500 rounded-lg"
+                data-comment-id="{{ comment.id }}"
+              >
+                更新
+              </button>
+            </div>
+          </div>
+
+          <!-- 留言時間 -->
           <p class="text-sm text-gray-500">
             {{ comment.created_at|timesince }} 前
           </p>
+
+          <!-- 「⋯」選單按鈕（只有留言者可見） -->
+          {% if user == comment.author %}
+          <div class="absolute top-2 right-2">
+            <button
+              @click="showMenu = !showMenu"
+              class="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-200"
+            >
+              ⋯
+            </button>
+            <div
+              x-show="showMenu"
+              @click.away="showMenu = false"
+              class="absolute right-0 w-24 mt-2 text-white bg-black border border-gray-700 rounded-md shadow-lg"
+              style="z-index: 1000"
+            >
+              <button
+                @click="isEditing = true; showMenu = false"
+                class="flex items-center w-full px-4 py-2 hover:bg-gray-700"
+              >
+                編輯
+              </button>
+              <button
+                @click="deleteComment({{ comment.id }})"
+                class="flex items-center w-full px-4 py-2 text-red-500 hover:bg-gray-700"
+              >
+                刪除
+              </button>
+            </div>
+          </div>
+          {% endif %}
         </div>
         {% empty %}
         <p class="text-gray-500">還沒有留言，成為第一個留言的人吧！</p>
@@ -242,7 +305,6 @@
             `;
             commentsList.prepend(newComment);
             commentContent.value = "";
-
             // 更新留言數
             const commentCountSpan = document.querySelector(
               "button > span[x-text='commentCount']"
@@ -297,7 +359,6 @@
         `;
             commentsList.prepend(newComment);
             popupCommentContent.value = "";
-
             // 更新留言數
             const commentCountSpan = document.querySelector(
               "button > span[x-text='commentCount']"
@@ -318,6 +379,53 @@
           alert("發生錯誤，請稍後再試。");
         });
     });
+    function updateComment(commentId, newContent) {
+      const csrfToken = document.querySelector(
+        "[name=csrfmiddlewaretoken]"
+      ).value;
+      fetch(`/posts/comments/${commentId}/edit/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({ content: newContent }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload(); // ✅ 刷新頁面顯示更新後的留言
+          } else {
+            alert("更新失敗：" + data.error);
+          }
+        })
+        .catch((error) => console.error("更新留言錯誤:", error));
+    }
+
+    // ✅ 確保 `updateComment` 可以從 HTML 內部直接呼叫
+    window.updateComment = updateComment;
+
+    function deleteComment(commentId) {
+      if (!confirm("確定要刪除此留言嗎？")) return;
+
+      const csrfToken = document.querySelector(
+        "[name=csrfmiddlewaretoken]"
+      ).value;
+      fetch(`/posts/comments/${commentId}/delete/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": csrfToken },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload(); // 刷新頁面移除留言
+          } else {
+            alert("刪除失敗：" + data.error);
+          }
+        })
+        .catch((error) => console.error("刪除留言錯誤:", error));
+    }
+    window.deleteComment = deleteComment;
   });
 </script>
 

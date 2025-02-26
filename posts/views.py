@@ -216,3 +216,27 @@ def add_comment(request, post_id):
         return JsonResponse({"success": False, "error": "留言內容不能為空"})
 
     return HttpResponseForbidden("不允許的請求方法")
+
+
+# 編輯留言
+@login_required
+def edit_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, author=request.user)
+    if request.method == "POST":
+        new_content = request.POST.get("content", "").strip()
+        if not new_content:
+            return JsonResponse({"success": False, "error": "留言內容不能為空！"})
+        comment.content = new_content
+        comment.save()
+        return JsonResponse({"success": True, "new_content": new_content})
+    return JsonResponse({"success": False, "error": "請使用 POST 方法"})
+
+
+# 刪除留言
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, author=request.user)
+    if request.method == "POST":
+        comment.delete()
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "error": "請使用 POST 方法"})
