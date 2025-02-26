@@ -21,7 +21,7 @@ from django.core.validators import EmailValidator
 from django.core.exceptions import ValidationError
 from .forms import CustomSetPasswordForm
 from django.contrib.auth import update_session_auth_hash
-
+from django.http import JsonResponse
 
 # from django.shortcuts import get_object_or_404 尚未使用404頁面
 
@@ -174,45 +174,53 @@ def logout_view(request):
 
 @login_required
 def upload_avatar(request):
-    if request.method == "POST" and request.FILES.get("avatar"):
+    if request.method == "POST":
+        if not request.FILES.get("avatar"):
+            return JsonResponse(
+                {"success": False, "error": "請選擇有效的圖片檔案"}, status=400
+            )
+
         avatar = request.FILES["avatar"]
 
-        # 檢查檔案大小 (限制 5 MB)
+        # ✅ 檢查檔案大小 (限制 5 MB)
         if avatar.size > 5 * 1024 * 1024:
-            messages.error(request, "檔案大小不能超過 5 MB")
-            return redirect("users:upload_avatar")
+            return JsonResponse(
+                {"success": False, "error": "檔案大小不能超過 5 MB"}, status=400
+            )
 
-        # 檢查檔案類型 (僅允許 JPEG 和 PNG)
-        if not hasattr(avatar, "content_type") or avatar.content_type not in [
-            "image/jpeg",
-            "image/png",
-        ]:
-            messages.error(request, " 只能上傳 JPEG 或 PNG 格式的圖片")
-            return redirect("users:upload_avatar")
+        # ✅ 檢查檔案類型 (僅允許 JPEG 和 PNG)
+        if avatar.content_type not in ["image/jpeg", "image/png"]:
+            return JsonResponse(
+                {"success": False, "error": "只能上傳 JPEG 或 PNG 格式的圖片"},
+                status=400,
+            )
 
-        # 上傳檔案到 S3
+        # ✅ 上傳檔案到 S3 (請確保 `upload_to_s3()` 正常運作)
         file_url = upload_to_s3(avatar)
 
         if file_url:
-            # 更新或創建用戶資料
-            user_profile, created = Profile.objects.get_or_create(user=request.user)
+            # ✅ 更新用戶頭像
+            user_profile, _ = Profile.objects.get_or_create(user=request.user)
             user_profile.avatar = file_url
             user_profile.save()
 
-            messages.success(request, "頭像上傳成功！")
+            return JsonResponse({"success": True, "avatar_url": file_url})
         else:
-            messages.error(request, "頭像上傳失敗，請稍後再試")
+            return JsonResponse(
+                {"success": False, "error": "頭像上傳失敗，請稍後再試"}, status=500
+            )
 
-        return redirect("users:profile")
-
-    return render(request, "users/upload_avatar.html", {"form": ProfileForm()})
+    return JsonResponse({"success": False, "error": "請選擇有效的圖片檔案"}, status=400)
 
 
 @login_required
 def profile_view(request):
-    # 獲取用戶的 Profile 資訊，顯示頭像 URL
     user_profile = Profile.objects.filter(user=request.user).first()
-    avatar_url = user_profile.avatar if user_profile and user_profile.avatar else None
+    avatar_url = (
+        user_profile.avatar
+        if user_profile and user_profile.avatar
+        else "/static/images/user-avatar.png"
+    )
 
     return render(request, "users/profile.html", {"avatar_url": avatar_url})
 

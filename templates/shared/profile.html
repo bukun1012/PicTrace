@@ -1,16 +1,21 @@
-{% extends "shared/layout.html" %} {% block content %}{% load static %}
+{% extends "shared/layout.html" %} {% block content %} {% load static %}
+
 <div
-  class="profile-header"
-  style="background: url('{{ background_url|default:'/static/images/profile-background.webp' }}') center/cover no-repeat; padding: 50px 20px; text-align: center; color: white;"
+  class="flex flex-col items-center justify-center profile-header"
+  style="background: url('{% if background_url %}{{ background_url }}{% else %}{% static 'images/profile-background.webp' %}{% endif %}') center/cover no-repeat;
+  padding: 50px 20px; text-align: center; color: white;"
 >
-  <div class="profile-avatar" style="display: inline-block; position: relative">
+  <!-- Alpine.js 控制彈出視窗 -->
+  <div class="profile-avatar" x-data="{ openModal: false, previewUrl: null }">
+    <!-- 點擊頭像開啟 Modal -->
     <a
-      href="{% url 'users:upload_avatar' %}"
+      @click="openModal = true"
       style="display: block; position: relative"
+      class="relative block avatar-container"
     >
-      {% if user.profile.avatar %}
       <img
-        src="{{ user.profile.avatar }}"
+        id="current-avatar"
+        src="{{ avatar_url }}"
         alt="User Avatar"
         style="
           width: 100px;
@@ -21,22 +26,75 @@
         "
         class="avatar-image"
       />
-      {% else %}
-      <img
-        src="{% static 'images/user-avatar.png' %}"
-        alt="User Avatar"
-        style="
-          width: 100px;
-          height: 100px;
-          border-radius: 50%;
-          border: 3px solid white;
-          transition: opacity 0.3s ease-in-out;
-        "
-        class="avatar-image"
-      />
-      {% endif %}
     </a>
+
+    <!-- 彈出視窗 (Modal) -->
+    <div
+      x-show="openModal"
+      class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50"
+    >
+      <div class="p-6 bg-white rounded-lg shadow-lg w-96">
+        <h3 class="text-xl font-semibold text-center text-black">更新頭像</h3>
+
+        <!-- 預覽圖片 -->
+        <div class="flex flex-col items-center mt-4 space-y-4">
+          <img
+            x-show="previewUrl"
+            x-bind:src="previewUrl"
+            class="object-cover w-32 h-32 border border-gray-300 rounded-full"
+            alt="預覽圖片"
+          />
+
+          <!-- 檔案輸入 -->
+          <input
+            type="file"
+            name="avatar"
+            accept="image/png, image/jpeg"
+            x-ref="fileInput"
+            @change="let file = $refs.fileInput.files[0]; 
+                     if (file) { 
+                       let reader = new FileReader(); 
+                       reader.onload = e => previewUrl = e.target.result; 
+                       reader.readAsDataURL(file); 
+                     }"
+            class="w-full px-4 py-2 border rounded-lg cursor-pointer"
+          />
+        </div>
+
+        <!-- 注意事項 -->
+        <div class="p-3 mt-2 text-sm text-gray-700 bg-gray-100 rounded-lg">
+          <ul class="text-left list-disc list-inside">
+            <li>
+              檔案大小不得超過 <span class="font-bold text-red-500">5MB</span>
+            </li>
+            <li>
+              僅支援 <span class="font-bold text-blue-500">JPEG</span> 與
+              <span class="font-bold text-blue-500">PNG</span> 格式
+            </li>
+            <li>請確保頭像清晰且可辨識</li>
+          </ul>
+        </div>
+
+        <!-- 上傳按鈕 -->
+        <div class="flex justify-end mt-4 space-x-2">
+          <button
+            @click="openModal = false"
+            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+          >
+            取消
+          </button>
+
+          <button
+            @click="uploadAvatar($refs.fileInput.files[0])"
+            class="px-4 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700"
+          >
+            上傳
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
+
   <h1
     style="
       margin-top: 10px;
@@ -51,38 +109,67 @@
   </p>
 </div>
 
-<nav
-  class="profile-nav"
-  style="
-    display: flex;
-    justify-content: center;
-    padding: 10px 0;
-    background: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  "
->
-  <a
-    href="{% url 'users:profile' %}"
-    style="color: black; margin: 0 15px; text-decoration: none"
-    >關於</a
-  >
-  <a href="#" style="color: black; margin: 0 15px; text-decoration: none"
-    >貼文</a
-  >
-  <a href="#" style="color: black; margin: 0 15px; text-decoration: none"
-    >統計資料</a
-  >
-</nav>
+<!-- Alpine.js + AJAX -->
+<script>
+  function uploadAvatar(file) {
+    if (!file) {
+      alert("請選擇一張圖片");
+      return;
+    }
 
+    let formData = new FormData();
+    formData.append("avatar", file);
+    formData.append("csrfmiddlewaretoken", "{{ csrf_token }}");
+
+    fetch("{% url 'users:upload_avatar' %}", {
+      // ✅ 改成專門的 API
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          document.getElementById("current-avatar").src = data.avatar_url;
+
+          setTimeout(() => {
+            location.reload();
+          }, 1000); // ✅ 更新頁面
+        } else {
+          alert("上傳失敗：" + data.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("上傳失敗，請稍後再試");
+      });
+  }
+</script>
+
+<!--關於上傳圖片的注意事項-->
 <style>
-  .profile-avatar {
+  .avatar-container {
     position: relative;
     display: inline-block;
+    cursor: pointer; /* 讓鼠標變成可點擊 */
   }
 
-  .profile-avatar:hover .avatar-image {
-    opacity: 0.5;
+  /* Hover 時顯示白色半透明底 */
+  .avatar-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3); /* 半透明白色 */
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .avatar-container:hover::before {
+    opacity: 1;
   }
 </style>
 
-{% block profile %}{% endblock %} {% endblock %}
+{% endblock %}
